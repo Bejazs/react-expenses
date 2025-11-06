@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { useExpenseViewModel } from '../viewmodels/ExpenseViewModel';
 
+/**
+ * A screen component for displaying and managing expenses.
+ * It provides a user interface for adding new expenses and viewing the list of existing expenses.
+ *
+ * @returns {JSX.Element} The rendered expense screen component.
+ */
 const ExpenseScreen = () => {
   const { expenses, loading, addExpense } = useExpenseViewModel();
   const [description, setDescription] = useState('');

@@ -2,6 +2,17 @@ import { useState, useEffect } from 'react';
 import { Expense } from '../models/Expense';
 import { getExpenses, saveExpenses } from '../services/ExpenseService';
 
+/**
+ * A custom hook for managing expense data.
+ * It handles loading, adding, and storing expenses.
+ *
+ * @returns {{
+ *   expenses: Expense[],
+ *   loading: boolean,
+ *   addExpense: (description: string, amount: number) => Promise<void>,
+ *   loadExpenses: () => Promise<void>
+ * }} An object containing the expenses, loading state, and functions to manage expenses.
+ */
 export const useExpenseViewModel = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
