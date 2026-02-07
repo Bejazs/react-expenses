@@ -19,8 +19,9 @@ This is a simple mobile application for tracking personal expenses. It allows us
 
 ### Prerequisites
 
-- Node.js and npm installed on your machine.
-- Expo Go app on your mobile device or an Android/iOS emulator.
+- **Node.js**: Recommended LTS version (v20+).
+    - *Note for Windows users:* This project includes a fix for **Node.js v24+**.
+- **Expo Go**: Ensure you have the latest version installed on your mobile device (compatible with SDK 54).
 
 ### Installation
 
@@ -33,15 +34,17 @@ This is a simple mobile application for tracking personal expenses. It allows us
    cd <project-directory>
    ```
 3. **Install the dependencies:**
+   Due to peer dependency requirements in recent React Native versions, use the legacy peer deps flag:
    ```bash
-   npm install
+   npm install --legacy-peer-deps
    ```
 
 ### Running the Application
 
 1. **Start the Expo development server:**
+   We recommend running with the clear cache flag to avoid issues:
    ```bash
-   npm start
+   npx expo start -c
    ```
 
 2. **Running on iOS (iPhone/iPad):**
@@ -64,6 +67,7 @@ This is a simple mobile application for tracking personal expenses. It allows us
 
 ### Troubleshooting
 
+- **Windows Users**: If you encounter `mkdir` errors related to `node:sea`, this project is already configured to automatically use a patched version of the Expo CLI. Ensure you ran `npm install` correctly.
 - If you encounter connection issues, ensure your phone and computer are on the same Wi-Fi network.
 - You can also try running `npx expo start --tunnel` if you have network restrictions.
 
