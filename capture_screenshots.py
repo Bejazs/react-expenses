@@ -1,9 +1,15 @@
 import time
+import os
 from playwright.sync_api import sync_playwright
 
 def run(playwright):
     browser = playwright.chromium.launch(headless=True)
     page = browser.new_page()
+
+    # Create screenshots directory
+    screenshots_dir = "screenshots"
+    if not os.path.exists(screenshots_dir):
+        os.makedirs(screenshots_dir)
 
     try:
         print("Navigating to http://localhost:8081")
@@ -14,19 +20,19 @@ def run(playwright):
 
         # 1. Capture Dashboard (Initial)
         print("Taking Dashboard screenshot")
-        page.screenshot(path="01_Dashboard.png")
+        page.screenshot(path=os.path.join(screenshots_dir, "01_Dashboard.png"))
 
         # 2. Capture Expenses Tab
         print("Navigating to Expenses")
         page.get_by_text("Expenses").last.click()
         page.wait_for_timeout(3000)
-        page.screenshot(path="02_Expenses_Tab.png")
+        page.screenshot(path=os.path.join(screenshots_dir, "02_Expenses_Tab.png"))
 
         # 3. Capture Categories Tab
         print("Navigating to Categories")
         page.get_by_text("Categories").last.click()
         page.wait_for_timeout(3000)
-        page.screenshot(path="03_Categories_Tab.png")
+        page.screenshot(path=os.path.join(screenshots_dir, "03_Categories_Tab.png"))
 
         # 4. Add Expense Flow
         print("Adding Expense...")
@@ -45,11 +51,7 @@ def run(playwright):
         page.get_by_placeholder("Amount").fill("50")
 
         # Select Category "Food" inside the dialog
-        # If get_by_role("dialog") fails (some versions/implementations), we can try .last
-        # But the error message suggested it exists.
         print("Selecting Category")
-        # Trying .last first as it is simpler and covers the case where dialog role isn't perfect but element is last added.
-        # But wait, the Pie chart is behind the modal. So "Food" in Legend is first, "Food" in Modal is second.
         page.get_by_text("Food", exact=True).last.click()
 
         # Save
@@ -59,17 +61,19 @@ def run(playwright):
 
         # 5. Capture Dashboard (Updated)
         print("Taking Updated Dashboard screenshot")
-        page.screenshot(path="04_Dashboard_Updated.png")
+        page.screenshot(path=os.path.join(screenshots_dir, "04_Dashboard_Updated.png"))
 
         # 6. Capture Expenses List (Updated)
         print("Navigating to Expenses List")
         page.get_by_text("Expenses").last.click()
         page.wait_for_timeout(3000)
-        page.screenshot(path="05_Expenses_Updated.png")
+        page.screenshot(path=os.path.join(screenshots_dir, "05_Expenses_Updated.png"))
+
+        print(f"Screenshots saved to: {os.path.abspath(screenshots_dir)}")
 
     except Exception as e:
         print(f"Error: {e}")
-        page.screenshot(path="error_state.png")
+        page.screenshot(path=os.path.join(screenshots_dir, "error_state.png"))
     finally:
         browser.close()
 

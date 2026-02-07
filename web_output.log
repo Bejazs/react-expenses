@@ -17,3 +17,5 @@ Web Bundled 2739ms (node_modules/expo/AppEntry.js)
 transform[stderr]: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
 Web Bundled 1043ms (node_modules/expo/AppEntry.js)
 Web Bundled 42ms (node_modules/expo/AppEntry.js)
+transform[stderr]: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+Web Bundled 4442ms (node_modules/expo/AppEntry.js)
