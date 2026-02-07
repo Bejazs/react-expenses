@@ -7,6 +7,10 @@ import { Ionicons } from '@expo/vector-icons';
 import ExpenseModal from '../components/ExpenseModal';
 import { useIsFocused } from '@react-navigation/native';
 
+/**
+ * Screen for displaying the list of expenses.
+ * Allows viewing, editing, and deleting expenses.
+ */
 const ExpensesListScreen = () => {
   const { expenses, loading, deleteExpense, updateExpense, loadExpenses } = useExpenseViewModel();
   const { categories, loadCategories } = useCategoryViewModel();
@@ -14,6 +18,7 @@ const ExpensesListScreen = () => {
   const [selectedExpense, setSelectedExpense] = useState<Expense | undefined>(undefined);
   const isFocused = useIsFocused();
 
+  // Reload data when screen gains focus
   useEffect(() => {
     if (isFocused) {
       loadExpenses();
@@ -21,11 +26,19 @@ const ExpensesListScreen = () => {
     }
   }, [isFocused]);
 
+  /**
+   * Opens the modal to edit the selected expense.
+   * @param expense The expense to edit.
+   */
   const handleEditExpense = (expense: Expense) => {
     setSelectedExpense(expense);
     setModalVisible(true);
   };
 
+  /**
+   * Saves changes to an expense (update).
+   * @param expenseData The updated expense data.
+   */
   const handleSaveExpense = async (expenseData: any) => {
     if (selectedExpense) { // Ensure we are editing
       await updateExpense({
@@ -38,6 +51,10 @@ const ExpensesListScreen = () => {
     setSelectedExpense(undefined);
   };
 
+  /**
+   * Prompts the user to confirm deletion of an expense.
+   * @param id The ID of the expense to delete.
+   */
   const confirmDeleteExpense = (id: string) => {
     Alert.alert(
       "Delete Expense",
@@ -49,6 +66,9 @@ const ExpensesListScreen = () => {
     );
   };
 
+  /**
+   * Renders a single expense item in the list.
+   */
   const renderItem = ({ item }: { item: Expense }) => {
     const category = categories.find(c => c.id === item.categoryId);
     // Handle invalid date

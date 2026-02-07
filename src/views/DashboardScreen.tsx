@@ -9,12 +9,18 @@ import { useIsFocused } from '@react-navigation/native';
 
 const screenWidth = Dimensions.get('window').width;
 
+/**
+ * Dashboard Screen.
+ * Displays a summary of expenses, including total spent this month,
+ * a pie chart breakdown by category, and a bar chart of monthly history.
+ */
 const DashboardScreen = () => {
   const { expenses, loadExpenses, addExpense } = useExpenseViewModel();
   const { categories, loadCategories } = useCategoryViewModel();
   const [modalVisible, setModalVisible] = useState(false);
   const isFocused = useIsFocused();
 
+  // Reload data when screen is focused
   useEffect(() => {
     if (isFocused) {
       loadExpenses();
@@ -22,6 +28,12 @@ const DashboardScreen = () => {
     }
   }, [isFocused]);
 
+  /**
+   * Computes derived data for the dashboard:
+   * - Total spent this month.
+   * - Pie chart data (expenses by category for current month).
+   * - Bar chart data (total expenses for last 6 months).
+   */
   const { totalSpent, pieData, barData } = useMemo(() => {
     const now = new Date();
     const currentMonth = now.getMonth();

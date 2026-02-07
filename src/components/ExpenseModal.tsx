@@ -4,14 +4,38 @@ import { Ionicons } from '@expo/vector-icons';
 import { Category } from '../models/Category';
 import { Expense } from '../models/Expense';
 
+/**
+ * Props for the ExpenseModal component.
+ */
 interface ExpenseModalProps {
+  /**
+   * Whether the modal is currently visible.
+   */
   visible: boolean;
+  /**
+   * Callback function when the modal is requested to be closed.
+   */
   onClose: () => void;
+  /**
+   * Callback function when the expense is saved.
+   * Passes an object with expense details. ID is optional for new expenses.
+   */
   onSave: (expense: Omit<Expense, 'id'> & { id?: string }) => void;
+  /**
+   * The expense object to edit, if editing an existing expense.
+   * If null/undefined, the modal is in "Add" mode.
+   */
   initialExpense?: Expense;
+  /**
+   * The list of available categories to select from.
+   */
   categories: Category[];
 }
 
+/**
+ * A modal component for adding or editing an expense.
+ * It provides input fields for description, amount, date, and category selection.
+ */
 const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, initialExpense, categories }) => {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
@@ -21,9 +45,9 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
   useEffect(() => {
     if (visible) {
       if (initialExpense) {
+        // Pre-fill fields if editing
         setDescription(initialExpense.description);
         setAmount(initialExpense.amount.toString());
-        // Handle date string properly
         try {
             setDate(new Date(initialExpense.date).toISOString().split('T')[0]);
         } catch (e) {
@@ -31,11 +55,11 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
         }
         setSelectedCategoryId(initialExpense.categoryId);
       } else {
+        // Clear fields if adding new
         setDescription('');
         setAmount('');
         setDate(new Date().toISOString().split('T')[0]);
         if (categories.length > 0) {
-          // Default to first category if available, or try to find 'other'
           const defaultCat = categories.find(c => c.name === 'Other') || categories[0];
           setSelectedCategoryId(defaultCat?.id || '');
         }
@@ -43,6 +67,9 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
     }
   }, [visible, initialExpense, categories]);
 
+  /**
+   * Validates input and triggers the onSave callback.
+   */
   const handleSave = () => {
     const numericAmount = parseFloat(amount);
     if (!description || isNaN(numericAmount) || !selectedCategoryId) {
@@ -50,7 +77,6 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
       return;
     }
 
-    // Basic date validation
     let finalDate = new Date().toISOString();
     try {
         finalDate = new Date(date).toISOString();

@@ -4,15 +4,24 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCategoryViewModel } from '../viewmodels/CategoryViewModel';
 import { Category } from '../models/Category';
 
+// Available icons for selection
 const ICONS = ['fast-food', 'car', 'film', 'cart', 'apps', 'briefcase', 'home', 'construct', 'flower', 'airplane'];
+// Available colors for selection
 const COLORS = ['#FF6347', '#4682B4', '#9370DB', '#20B2AA', '#808080', '#FFA500', '#FF4500', '#32CD32'];
 
+/**
+ * Screen for managing categories.
+ * Allows creating new categories with custom icons and colors, and deleting existing ones.
+ */
 const CategoriesScreen = () => {
   const { categories, loading, addCategory, deleteCategory } = useCategoryViewModel();
   const [name, setName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState(ICONS[0]);
   const [selectedColor, setSelectedColor] = useState(COLORS[0]);
 
+  /**
+   * Handles adding a new category.
+   */
   const handleAddCategory = () => {
     if (name.trim()) {
       addCategory(name, selectedIcon, selectedColor);
@@ -24,6 +33,10 @@ const CategoriesScreen = () => {
     }
   };
 
+  /**
+   * Confirms and handles deletion of a category.
+   * @param id The ID of the category to delete.
+   */
   const handleDeleteCategory = (id: string) => {
     Alert.alert(
       'Delete Category',
@@ -35,6 +48,9 @@ const CategoriesScreen = () => {
     );
   };
 
+  /**
+   * Renders a single category item in the list.
+   */
   const renderItem = ({ item }: { item: Category }) => (
     <View style={styles.categoryItem}>
       <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
