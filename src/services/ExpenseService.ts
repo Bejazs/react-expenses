@@ -1,10 +1,7 @@
-import { File, Paths } from 'expo-file-system';
+import { Platform } from 'react-native';
 import { Expense } from '../models/Expense';
 import { Category } from '../models/Category';
-
-// Create File instances
-const expensesFile = new File(Paths.document, 'expenses.json');
-const categoriesFile = new File(Paths.document, 'categories.json');
+import * as FileSystem from 'expo-file-system';
 
 const DEFAULT_CATEGORIES: Category[] = [
   { id: 'food', name: 'Food', icon: 'fast-food', color: '#FF6347' },
@@ -14,52 +11,69 @@ const DEFAULT_CATEGORIES: Category[] = [
   { id: 'other', name: 'Other', icon: 'apps', color: '#808080' },
 ];
 
-/**
- * Retrieves the list of expenses from the file system.
- * @returns {Promise<Expense[]>} A promise that resolves to an array of expenses. If the file does not exist or an error occurs, it returns an empty array.
- */
-export const getExpenses = async (): Promise<Expense[]> => {
+// Initialize file instances only on native
+let expensesFile: FileSystem.File | null = null;
+let categoriesFile: FileSystem.File | null = null;
+
+if (Platform.OS !== 'web') {
   try {
-    if (expensesFile.exists) {
+    const { File, Paths } = FileSystem;
+    expensesFile = new File(Paths.document, 'expenses.json');
+    categoriesFile = new File(Paths.document, 'categories.json');
+  } catch (e) {
+    console.warn("Failed to initialize FileSystem:", e);
+  }
+}
+
+export const getExpenses = async (): Promise<Expense[]> => {
+  if (Platform.OS === 'web') {
+    const data = localStorage.getItem('expenses');
+    return data ? JSON.parse(data) : [];
+  }
+
+  try {
+    if (expensesFile?.exists) {
       const fileContent = await expensesFile.text();
       return JSON.parse(fileContent);
-    } else {
-      return [];
     }
+    return [];
   } catch (error) {
     console.error('Error reading expenses:', error);
     return [];
   }
 };
 
-/**
- * Saves the list of expenses to the file system.
- * @param {Expense[]} expenses - The array of expenses to save.
- * @returns {Promise<void>} A promise that resolves when the expenses have been saved.
- */
 export const saveExpenses = async (expenses: Expense[]): Promise<void> => {
+  if (Platform.OS === 'web') {
+    localStorage.setItem('expenses', JSON.stringify(expenses));
+    return;
+  }
+
   try {
-    const fileContent = JSON.stringify(expenses, null, 2);
-    expensesFile.write(fileContent);
+    if (expensesFile) {
+        expensesFile.write(JSON.stringify(expenses, null, 2));
+    }
   } catch (error) {
     console.error('Error saving expenses:', error);
   }
 };
 
-/**
- * Retrieves the list of categories. Seeds default categories if none exist.
- * @returns {Promise<Category[]>}
- */
 export const getCategories = async (): Promise<Category[]> => {
-  try {
-    if (categoriesFile.exists) {
-      const content = await categoriesFile.text();
-      const categories = JSON.parse(content);
-      // If parsing fails or returns something unexpected, we might want to recover.
-      // But assuming valid JSON array.
-      return categories;
+  if (Platform.OS === 'web') {
+    const data = localStorage.getItem('categories');
+    if (data) {
+        return JSON.parse(data);
     } else {
-      // Initialize with default categories
+        await saveCategories(DEFAULT_CATEGORIES);
+        return DEFAULT_CATEGORIES;
+    }
+  }
+
+  try {
+    if (categoriesFile?.exists) {
+      const content = await categoriesFile.text();
+      return JSON.parse(content);
+    } else {
       await saveCategories(DEFAULT_CATEGORIES);
       return DEFAULT_CATEGORIES;
     }
@@ -69,14 +83,16 @@ export const getCategories = async (): Promise<Category[]> => {
   }
 };
 
-/**
- * Saves the list of categories.
- * @param {Category[]} categories
- */
 export const saveCategories = async (categories: Category[]): Promise<void> => {
+  if (Platform.OS === 'web') {
+    localStorage.setItem('categories', JSON.stringify(categories));
+    return;
+  }
+
   try {
-    const content = JSON.stringify(categories, null, 2);
-    categoriesFile.write(content);
+    if (categoriesFile) {
+        categoriesFile.write(JSON.stringify(categories, null, 2));
+    }
   } catch (error) {
     console.error('Error saving categories:', error);
   }

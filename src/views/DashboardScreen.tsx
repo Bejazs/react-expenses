@@ -145,7 +145,7 @@ const DashboardScreen = () => {
         </View>
       </ScrollView>
 
-      <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>
+      <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)} testID="add-expense-btn">
           <Ionicons name="add" size={30} color="white" />
       </TouchableOpacity>
 

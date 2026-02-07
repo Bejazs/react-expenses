@@ -1,0 +1,19 @@
+
+> react-hello-world@1.0.0 web
+> expo start --web
+
+Starting project at /app
+Starting Metro Bundler
+The following packages should be updated for best compatibility with the installed expo version:
+  expo-file-system@19.0.17 - expected version: ~16.0.9
+  react-native-safe-area-context@5.6.2 - expected version: 4.8.2
+  react-native-screens@4.23.0 - expected version: ~3.29.0
+  react-native-svg@15.15.2 - expected version: 14.1.0
+Your project may not work correctly until you install the correct versions of the packages.
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+transform[stderr]: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+Web Bundled 2739ms (node_modules/expo/AppEntry.js)
+transform[stderr]: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+Web Bundled 1043ms (node_modules/expo/AppEntry.js)
+Web Bundled 42ms (node_modules/expo/AppEntry.js)
