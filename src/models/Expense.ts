@@ -15,7 +15,11 @@ export interface Expense {
    */
   amount: number;
   /**
-   * The date the expense was incurred, in a string format.
+   * The date the expense was incurred, stored as an ISO 8601 string.
    */
   date: string;
+  /**
+   * The ID of the category this expense belongs to.
+   */
+  categoryId: string;
 }
