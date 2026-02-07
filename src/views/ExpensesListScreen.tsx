@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 import { useExpenseViewModel } from '../viewmodels/ExpenseViewModel';
 import { useCategoryViewModel } from '../viewmodels/CategoryViewModel';
+import { useSettingsViewModel } from '../viewmodels/SettingsViewModel';
 import { Expense } from '../models/Expense';
 import { Ionicons } from '@expo/vector-icons';
 import ExpenseModal from '../components/ExpenseModal';
@@ -14,6 +15,7 @@ import { useIsFocused } from '@react-navigation/native';
 const ExpensesListScreen = () => {
   const { expenses, loading, deleteExpense, updateExpense, loadExpenses } = useExpenseViewModel();
   const { categories, loadCategories } = useCategoryViewModel();
+  const { currency, loadSettings } = useSettingsViewModel();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | undefined>(undefined);
   const isFocused = useIsFocused();
@@ -23,8 +25,11 @@ const ExpensesListScreen = () => {
     if (isFocused) {
       loadExpenses();
       loadCategories();
+      loadSettings();
     }
   }, [isFocused]);
+
+  const currencySymbol = currency === 'EUR' ? '€' : '$';
 
   /**
    * Opens the modal to edit the selected expense.
@@ -92,7 +97,7 @@ const ExpensesListScreen = () => {
             <Text style={styles.description}>{item.description}</Text>
             <Text style={styles.categoryName}>{category?.name || 'Uncategorized'} • {dateStr}</Text>
         </View>
-        <Text style={styles.amount}>${item.amount.toFixed(2)}</Text>
+        <Text style={styles.amount}>{currencySymbol}{item.amount.toFixed(2)}</Text>
       </TouchableOpacity>
     );
   };
@@ -104,7 +109,7 @@ const ExpensesListScreen = () => {
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={loadExpenses} />}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={() => { loadExpenses(); loadSettings(); }} />}
         ListEmptyComponent={<Text style={styles.emptyText}>No expenses found.</Text>}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
