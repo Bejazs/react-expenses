@@ -22,3 +22,19 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .expo/
+web-build/
+
+# Native builds
+*.apk
+*.aab
+*.ipa
+android/app/build/
+android/app/src/main/assets/
+ios/Pods/
+ios/build/
+
+# Keystores
+*.jks
+*.keystore
+*.p12
+*.key
