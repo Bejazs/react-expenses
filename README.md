@@ -43,9 +43,29 @@ This is a simple mobile application for tracking personal expenses. It allows us
    ```bash
    npm start
    ```
-2. **Scan the QR code:**
-   - Open the Expo Go app on your mobile device and scan the QR code displayed in the terminal.
-   - Alternatively, you can run the app on an emulator by selecting the appropriate option in the terminal.
+
+2. **Running on iOS (iPhone/iPad):**
+   - **Physical Device:**
+     1. Install the **Expo Go** app from the App Store.
+     2. Open the camera app on your iPhone and scan the QR code displayed in the terminal.
+     3. Tap the notification to open the project in Expo Go.
+   - **Simulator (macOS only):**
+     1. Ensure you have Xcode installed.
+     2. Press `i` in the terminal after starting the server to open the iOS simulator.
+
+3. **Running on Android:**
+   - **Physical Device:**
+     1. Install the **Expo Go** app from the Google Play Store.
+     2. Open the Expo Go app and tap "Scan QR Code".
+     3. Scan the QR code displayed in the terminal.
+   - **Emulator:**
+     1. Ensure you have Android Studio and a virtual device set up.
+     2. Press `a` in the terminal after starting the server to open the Android emulator.
+
+### Troubleshooting
+
+- If you encounter connection issues, ensure your phone and computer are on the same Wi-Fi network.
+- You can also try running `npx expo start --tunnel` if you have network restrictions.
 
 ## Code Overview
 
