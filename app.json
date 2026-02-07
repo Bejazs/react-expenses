@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "Expense Tracker",
+    "slug": "expense-tracker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "com.example.expensetracker"
+    },
+    "android": {
+      "package": "com.example.expensetracker"
+    }
+  }
+}
