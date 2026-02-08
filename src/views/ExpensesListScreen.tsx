@@ -3,6 +3,7 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, RefreshContr
 import { useExpenseViewModel } from '../viewmodels/ExpenseViewModel';
 import { useCategoryViewModel } from '../viewmodels/CategoryViewModel';
 import { Expense } from '../models/Expense';
+import { formatDate } from '../utils/dateUtils';
 import { Ionicons } from '@expo/vector-icons';
 import ExpenseModal from '../components/ExpenseModal';
 import { useIsFocused } from '@react-navigation/native';
@@ -71,13 +72,7 @@ const ExpensesListScreen = () => {
    */
   const renderItem = ({ item }: { item: Expense }) => {
     const category = categories.find(c => c.id === item.categoryId);
-    // Handle invalid date
-    let dateStr = '';
-    try {
-        dateStr = new Date(item.date).toLocaleDateString();
-    } catch (e) {
-        dateStr = 'Invalid Date';
-    }
+    const dateStr = formatDate(item.date);
 
     return (
       <TouchableOpacity
