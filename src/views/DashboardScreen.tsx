@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Refre
 import { PieChart, BarChart } from 'react-native-chart-kit';
 import { useExpenseViewModel } from '../viewmodels/ExpenseViewModel';
 import { useCategoryViewModel } from '../viewmodels/CategoryViewModel';
+import { useSettingsViewModel } from '../viewmodels/SettingsViewModel';
 import ExpenseModal from '../components/ExpenseModal';
 import { Ionicons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
@@ -17,6 +18,7 @@ const screenWidth = Dimensions.get('window').width;
 const DashboardScreen = () => {
   const { expenses, loadExpenses, addExpense } = useExpenseViewModel();
   const { categories, loadCategories } = useCategoryViewModel();
+  const { currency, loadSettings } = useSettingsViewModel();
   const [modalVisible, setModalVisible] = useState(false);
   const isFocused = useIsFocused();
 
@@ -25,8 +27,11 @@ const DashboardScreen = () => {
     if (isFocused) {
       loadExpenses();
       loadCategories();
+      loadSettings();
     }
   }, [isFocused]);
+
+  const currencySymbol = currency === 'EUR' ? '€' : '$';
 
   /**
    * Computes derived data for the dashboard:
@@ -112,13 +117,13 @@ const DashboardScreen = () => {
     <View style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={loadExpenses} />}
+        refreshControl={<RefreshControl refreshing={false} onRefresh={() => { loadExpenses(); loadSettings(); }} />}
       >
         <Text style={styles.title}>Dashboard</Text>
 
         <View style={styles.card}>
             <Text style={styles.cardTitle}>Total Spent (This Month)</Text>
-            <Text style={styles.totalAmount}>${totalSpent.toFixed(2)}</Text>
+            <Text style={styles.totalAmount}>{currencySymbol}{totalSpent.toFixed(2)}</Text>
         </View>
 
         {pieData.length > 0 ? (
@@ -149,7 +154,7 @@ const DashboardScreen = () => {
                 data={barData}
                 width={screenWidth - 60}
                 height={220}
-                yAxisLabel="$"
+                yAxisLabel={currencySymbol}
                 yAxisSuffix=""
                 chartConfig={chartConfig}
                 verticalLabelRotation={30}
