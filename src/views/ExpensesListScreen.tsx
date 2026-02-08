@@ -6,6 +6,7 @@ import { Expense } from '../models/Expense';
 import { Ionicons } from '@expo/vector-icons';
 import ExpenseModal from '../components/ExpenseModal';
 import { useIsFocused } from '@react-navigation/native';
+import { formatDate } from '../utils/dateUtils';
 
 /**
  * Screen for displaying the list of expenses.
@@ -71,13 +72,7 @@ const ExpensesListScreen = () => {
    */
   const renderItem = ({ item }: { item: Expense }) => {
     const category = categories.find(c => c.id === item.categoryId);
-    // Handle invalid date
-    let dateStr = '';
-    try {
-        dateStr = new Date(item.date).toLocaleDateString();
-    } catch (e) {
-        dateStr = 'Invalid Date';
-    }
+    const dateStr = formatDate(item.date);
 
     return (
       <TouchableOpacity
