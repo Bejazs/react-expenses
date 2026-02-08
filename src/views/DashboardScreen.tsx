@@ -6,6 +6,7 @@ import { useCategoryViewModel } from '../viewmodels/CategoryViewModel';
 import { useSettingsViewModel } from '../viewmodels/SettingsViewModel';
 import ExpenseModal from '../components/ExpenseModal';
 import { Ionicons } from '@expo/vector-icons';
+import { safeParseDate } from '../utils/dateUtils';
 import { useIsFocused } from '@react-navigation/native';
 
 const screenWidth = Dimensions.get('window').width;
@@ -45,12 +46,8 @@ const DashboardScreen = () => {
     const currentYear = now.getFullYear();
 
     const currentMonthExpenses = expenses.filter(e => {
-      try {
-        const d = new Date(e.date);
-        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-      } catch (err) {
-        return false;
-      }
+      const d = safeParseDate(e.date);
+      return d && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
     });
 
     const total = currentMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
@@ -86,12 +83,8 @@ const DashboardScreen = () => {
 
         const monthlySum = expenses
           .filter(e => {
-            try {
-              const ed = new Date(e.date);
-              return ed.getMonth() === m && ed.getFullYear() === y;
-            } catch (err) {
-              return false;
-            }
+            const ed = safeParseDate(e.date);
+            return ed && ed.getMonth() === m && ed.getFullYear() === y;
           })
           .reduce((sum, e) => sum + e.amount, 0);
         data.push(monthlySum);
