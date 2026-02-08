@@ -42,7 +42,6 @@ export default function App() {
         <Tab.Screen
           name="Settings"
           component={SettingsScreen}
-          options={{ tabBarLabel: () => null }}
         />
       </Tab.Navigator>
     </NavigationContainer>
