@@ -1,14 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 import { useExpenseViewModel } from '../viewmodels/ExpenseViewModel';
 import { useCategoryViewModel } from '../viewmodels/CategoryViewModel';
-import { useSettingsViewModel } from '../viewmodels/SettingsViewModel';
 import { Expense } from '../models/Expense';
-import { formatDate } from '../utils/dateUtils';
 import { Ionicons } from '@expo/vector-icons';
 import ExpenseModal from '../components/ExpenseModal';
 import { useIsFocused } from '@react-navigation/native';
 import { formatDate } from '../utils/dateUtils';
+
+/**
+ * A memoized component for rendering a single expense item.
+ * This prevents unnecessary re-renders of list items when other parts of the screen state change.
+ */
+const ExpenseItem = React.memo(({
+  item,
+  category,
+  onEdit,
+  onDelete
+}: {
+  item: Expense,
+  category: any,
+  onEdit: (expense: Expense) => void,
+  onDelete: (id: string) => void
+}) => {
+  const dateStr = formatDate(item.date);
+
+  return (
+    <TouchableOpacity
+      style={styles.expenseItem}
+      onPress={() => onEdit(item)}
+      onLongPress={() => onDelete(item.id)}
+    >
+      <View style={[styles.iconContainer, { backgroundColor: category?.color || '#ccc' }]}>
+          <Ionicons name={(category?.icon || 'help') as any} size={24} color="white" />
+      </View>
+      <View style={styles.details}>
+          <Text style={styles.description}>{item.description}</Text>
+          <Text style={styles.categoryName}>{category?.name || 'Uncategorized'} • {dateStr}</Text>
+      </View>
+      <Text style={styles.amount}>${item.amount.toFixed(2)}</Text>
+    </TouchableOpacity>
+  );
+});
 
 /**
  * Screen for displaying the list of expenses.
@@ -17,7 +50,6 @@ import { formatDate } from '../utils/dateUtils';
 const ExpensesListScreen = () => {
   const { expenses, loading, deleteExpense, updateExpense, loadExpenses } = useExpenseViewModel();
   const { categories, loadCategories } = useCategoryViewModel();
-  const { currency, loadSettings } = useSettingsViewModel();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | undefined>(undefined);
   const isFocused = useIsFocused();
@@ -27,20 +59,26 @@ const ExpensesListScreen = () => {
     if (isFocused) {
       loadExpenses();
       loadCategories();
-      loadSettings();
     }
   }, [isFocused]);
 
-  const currencySymbol = currency === 'EUR' ? '€' : '$';
+  /**
+   * Memoized category map for O(1) lookup during rendering.
+   */
+  const categoryMap = useMemo(() => {
+    const map = new Map();
+    categories.forEach(c => map.set(c.id, c));
+    return map;
+  }, [categories]);
 
   /**
    * Opens the modal to edit the selected expense.
    * @param expense The expense to edit.
    */
-  const handleEditExpense = (expense: Expense) => {
+  const handleEditExpense = useCallback((expense: Expense) => {
     setSelectedExpense(expense);
     setModalVisible(true);
-  };
+  }, []);
 
   /**
    * Saves changes to an expense (update).
@@ -62,7 +100,7 @@ const ExpensesListScreen = () => {
    * Prompts the user to confirm deletion of an expense.
    * @param id The ID of the expense to delete.
    */
-  const confirmDeleteExpense = (id: string) => {
+  const confirmDeleteExpense = useCallback((id: string) => {
     Alert.alert(
       "Delete Expense",
       "Are you sure you want to delete this expense?",
@@ -71,32 +109,20 @@ const ExpensesListScreen = () => {
         { text: "Delete", style: "destructive", onPress: () => deleteExpense(id) }
       ]
     );
-  };
+  }, [deleteExpense]);
 
   /**
    * Renders a single expense item in the list.
+   * Memoized to avoid re-creating the function on every render.
    */
-  const renderItem = ({ item }: { item: Expense }) => {
-    const category = categories.find(c => c.id === item.categoryId);
-    const dateStr = formatDate(item.date);
-
-    return (
-      <TouchableOpacity
-        style={styles.expenseItem}
-        onPress={() => handleEditExpense(item)}
-        onLongPress={() => confirmDeleteExpense(item.id)}
-      >
-        <View style={[styles.iconContainer, { backgroundColor: category?.color || '#ccc' }]}>
-            <Ionicons name={(category?.icon || 'help') as any} size={24} color="white" />
-        </View>
-        <View style={styles.details}>
-            <Text style={styles.description}>{item.description}</Text>
-            <Text style={styles.categoryName}>{category?.name || 'Uncategorized'} • {dateStr}</Text>
-        </View>
-        <Text style={styles.amount}>{currencySymbol}{item.amount.toFixed(2)}</Text>
-      </TouchableOpacity>
-    );
-  };
+  const renderItem = useCallback(({ item }: { item: Expense }) => (
+    <ExpenseItem
+      item={item}
+      category={categoryMap.get(item.categoryId)}
+      onEdit={handleEditExpense}
+      onDelete={confirmDeleteExpense}
+    />
+  ), [categoryMap, handleEditExpense, confirmDeleteExpense]);
 
   return (
     <View style={styles.container}>
@@ -105,7 +131,7 @@ const ExpensesListScreen = () => {
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={() => { loadExpenses(); loadSettings(); }} />}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={loadExpenses} />}
         ListEmptyComponent={<Text style={styles.emptyText}>No expenses found.</Text>}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
       />

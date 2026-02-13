@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import DashboardScreen from './src/views/DashboardScreen';
 import ExpensesListScreen from './src/views/ExpensesListScreen';
 import CategoriesScreen from './src/views/CategoriesScreen';
-import SettingsScreen from './src/views/SettingsScreen';
 import { StatusBar } from 'expo-status-bar';
 
 const Tab = createBottomTabNavigator();
@@ -25,8 +24,6 @@ export default function App() {
               iconName = focused ? 'list' : 'list-outline';
             } else if (route.name === 'Categories') {
               iconName = focused ? 'pricetags' : 'pricetags-outline';
-            } else if (route.name === 'Settings') {
-              iconName = focused ? 'settings' : 'settings-outline';
             }
 
             return <Ionicons name={iconName as any} size={size} color={color} />;
@@ -39,10 +36,6 @@ export default function App() {
         <Tab.Screen name="Dashboard" component={DashboardScreen} />
         <Tab.Screen name="Expenses" component={ExpensesListScreen} />
         <Tab.Screen name="Categories" component={CategoriesScreen} />
-        <Tab.Screen
-          name="Settings"
-          component={SettingsScreen}
-        />
       </Tab.Navigator>
     </NavigationContainer>
   );

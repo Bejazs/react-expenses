@@ -3,7 +3,6 @@ import { View, Text, TextInput, Button, Modal, StyleSheet, TouchableOpacity, Scr
 import { Ionicons } from '@expo/vector-icons';
 import { Category } from '../models/Category';
 import { Expense } from '../models/Expense';
-import { toISODateString, parseToISOString } from '../utils/dateUtils';
 
 /**
  * Props for the ExpenseModal component.
@@ -40,7 +39,7 @@ interface ExpenseModalProps {
 const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, initialExpense, categories }) => {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
-  const [date, setDate] = useState(toISODateString()); // YYYY-MM-DD
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]); // YYYY-MM-DD
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
 
   useEffect(() => {
@@ -49,13 +48,17 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
         // Pre-fill fields if editing
         setDescription(initialExpense.description);
         setAmount(initialExpense.amount.toString());
-        setDate(toISODateString(initialExpense.date));
+        try {
+            setDate(new Date(initialExpense.date).toISOString().split('T')[0]);
+        } catch (e) {
+            setDate(new Date().toISOString().split('T')[0]);
+        }
         setSelectedCategoryId(initialExpense.categoryId);
       } else {
         // Clear fields if adding new
         setDescription('');
         setAmount('');
-        setDate(toISODateString());
+        setDate(new Date().toISOString().split('T')[0]);
         if (categories.length > 0) {
           const defaultCat = categories.find(c => c.name === 'Other') || categories[0];
           setSelectedCategoryId(defaultCat?.id || '');
@@ -74,10 +77,12 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
       return;
     }
 
-    const finalDate = parseToISOString(date);
-    if (!finalDate) {
-      Alert.alert('Error', 'Invalid date format. Use YYYY-MM-DD');
-      return;
+    let finalDate = new Date().toISOString();
+    try {
+        finalDate = new Date(date).toISOString();
+    } catch (e) {
+        Alert.alert('Error', 'Invalid date format. Use YYYY-MM-DD');
+        return;
     }
 
     onSave({
