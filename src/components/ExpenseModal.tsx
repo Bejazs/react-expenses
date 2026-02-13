@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, Modal, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { CategoryIcon } from './CategoryIcon';
 import { Category } from '../models/Category';
 import { Expense } from '../models/Expense';
 import { toISODateString, parseToISOString } from '../utils/dateUtils';
@@ -129,7 +129,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
                 onPress={() => setSelectedCategoryId(category.id)}
               >
                 <View style={[styles.iconContainer, { backgroundColor: category.color }]}>
-                    <Ionicons name={category.icon as any} size={20} color="white" />
+                    <CategoryIcon icon={category.icon} size={20} color="white" />
                 </View>
                 <Text style={styles.categoryName} numberOfLines={1}>{category.name}</Text>
               </TouchableOpacity>

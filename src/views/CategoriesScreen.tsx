@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, Text, TextInput, Button, FlatList, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, Image, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { CategoryIcon } from '../components/CategoryIcon';
 import { useCategoryViewModel } from '../viewmodels/CategoryViewModel';
 import { Category } from '../models/Category';
+import * as ImagePicker from 'expo-image-picker';
+import { saveCustomIcon } from '../services/ImageService';
+import { ICON_NAMES } from '../utils/iconUtils';
 
-// Available icons for selection
-const ICONS = ['fast-food', 'car', 'film', 'cart', 'apps', 'briefcase', 'home', 'construct', 'flower', 'airplane'];
 // Available colors for selection
 const COLORS = ['#FF6347', '#4682B4', '#9370DB', '#20B2AA', '#808080', '#FFA500', '#FF4500', '#32CD32'];
 
@@ -16,8 +18,16 @@ const COLORS = ['#FF6347', '#4682B4', '#9370DB', '#20B2AA', '#808080', '#FFA500'
 const CategoriesScreen = () => {
   const { categories, loading, addCategory, deleteCategory } = useCategoryViewModel();
   const [name, setName] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState(ICONS[0]);
+  const [selectedIcon, setSelectedIcon] = useState('help-circle'); // Default icon
   const [selectedColor, setSelectedColor] = useState(COLORS[0]);
+
+  const [iconModalVisible, setIconModalVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredIcons = useMemo(() => {
+    if (!searchQuery) return ICON_NAMES.slice(0, 100); // Show first 100 initially
+    return ICON_NAMES.filter(icon => icon.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 200);
+  }, [searchQuery]);
 
   /**
    * Handles adding a new category.
@@ -26,7 +36,7 @@ const CategoriesScreen = () => {
     if (name.trim()) {
       addCategory(name, selectedIcon, selectedColor);
       setName('');
-      setSelectedIcon(ICONS[0]);
+      setSelectedIcon('help-circle');
       setSelectedColor(COLORS[0]);
     } else {
       Alert.alert('Error', 'Please enter a category name');
@@ -49,18 +59,53 @@ const CategoriesScreen = () => {
   };
 
   /**
+   * Handles picking an image from the gallery.
+   */
+  const pickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+      });
+
+      if (!result.canceled) {
+        const savedUri = await saveCustomIcon(result.assets[0].uri);
+        setSelectedIcon(savedUri);
+        setIconModalVisible(false);
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Failed to pick image');
+    }
+  };
+
+  /**
    * Renders a single category item in the list.
    */
   const renderItem = ({ item }: { item: Category }) => (
     <View style={styles.categoryItem}>
       <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
-        <Ionicons name={item.icon as any} size={24} color="white" />
+        <CategoryIcon icon={item.icon} size={24} color="white" />
       </View>
       <Text style={styles.categoryName}>{item.name}</Text>
       <TouchableOpacity onPress={() => handleDeleteCategory(item.id)}>
         <Ionicons name="trash-outline" size={24} color="red" />
       </TouchableOpacity>
     </View>
+  );
+
+  const renderIconItem = ({ item }: { item: string }) => (
+    <TouchableOpacity
+      style={styles.iconGridItem}
+      onPress={() => {
+        setSelectedIcon(item);
+        setIconModalVisible(false);
+      }}
+    >
+      <Ionicons name={item as any} size={32} color="black" />
+    </TouchableOpacity>
   );
 
   return (
@@ -75,23 +120,15 @@ const CategoriesScreen = () => {
           onChangeText={setName}
         />
 
-        <Text style={styles.label}>Select Icon:</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.selector}>
-          {ICONS.map((icon) => (
-            <TouchableOpacity
-              key={icon}
-              style={[
-                styles.iconOption,
-                selectedIcon === icon && styles.selectedOption,
-              ]}
-              onPress={() => setSelectedIcon(icon)}
-            >
-              <Ionicons name={icon as any} size={24} color={selectedIcon === icon ? 'blue' : 'black'} />
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        <Text style={styles.label}>Icon:</Text>
+        <View style={styles.iconSelectionRow}>
+            <View style={[styles.selectedIconPreview, { backgroundColor: selectedColor }]}>
+                <CategoryIcon icon={selectedIcon} size={30} color="white" />
+            </View>
+            <Button title="Select Icon" onPress={() => setIconModalVisible(true)} />
+        </View>
 
-        <Text style={styles.label}>Select Color:</Text>
+        <Text style={styles.label}>Color:</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.selector}>
           {COLORS.map((color) => (
             <TouchableOpacity
@@ -115,6 +152,46 @@ const CategoriesScreen = () => {
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
       />
+
+      <Modal
+        visible={iconModalVisible}
+        animationType="slide"
+        onRequestClose={() => setIconModalVisible(false)}
+      >
+          <View style={styles.modalContainer}>
+              <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Select Icon</Text>
+                  <TouchableOpacity onPress={() => setIconModalVisible(false)}>
+                      <Ionicons name="close" size={28} color="black" />
+                  </TouchableOpacity>
+              </View>
+
+              <View style={styles.modalActions}>
+                  <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+                      <Ionicons name="images" size={20} color="white" />
+                      <Text style={styles.uploadButtonText}>Upload from Gallery</Text>
+                  </TouchableOpacity>
+              </View>
+
+              <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search icons..."
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+              />
+
+              <FlatList
+                  data={filteredIcons}
+                  keyExtractor={(item) => item}
+                  renderItem={renderIconItem}
+                  numColumns={5}
+                  contentContainerStyle={styles.iconGrid}
+                  initialNumToRender={20}
+                  maxToRenderPerBatch={20}
+                  windowSize={5}
+              />
+          </View>
+      </Modal>
     </View>
   );
 };
@@ -145,23 +222,20 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 10,
   },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
+    marginHorizontal: 10,
+  },
   label: {
     fontWeight: 'bold',
     marginBottom: 5,
   },
   selector: {
     marginBottom: 10,
-  },
-  iconOption: {
-    padding: 10,
-    borderWidth: 1,
-    borderColor: 'transparent',
-    borderRadius: 5,
-    marginRight: 10,
-  },
-  selectedOption: {
-    borderColor: 'blue',
-    backgroundColor: '#e6f0ff',
   },
   colorOption: {
     width: 30,
@@ -197,6 +271,65 @@ const styles = StyleSheet.create({
   categoryName: {
     flex: 1,
     fontSize: 16,
+  },
+  iconSelectionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 10,
+  },
+  selectedIconPreview: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 15,
+  },
+  modalContainer: {
+      flex: 1,
+      backgroundColor: 'white',
+      paddingTop: 50,
+  },
+  modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      marginBottom: 20,
+  },
+  modalTitle: {
+      fontSize: 22,
+      fontWeight: 'bold',
+  },
+  modalActions: {
+      paddingHorizontal: 20,
+      marginBottom: 10,
+  },
+  uploadButton: {
+      flexDirection: 'row',
+      backgroundColor: '#007AFF',
+      padding: 10,
+      borderRadius: 8,
+      justifyContent: 'center',
+      alignItems: 'center',
+  },
+  uploadButtonText: {
+      color: 'white',
+      marginLeft: 10,
+      fontWeight: 'bold',
+  },
+  iconGrid: {
+      paddingHorizontal: 10,
+      paddingBottom: 20,
+  },
+  iconGridItem: {
+      flex: 1,
+      alignItems: 'center',
+      padding: 10,
+      margin: 5,
+      borderWidth: 1,
+      borderColor: '#eee',
+      borderRadius: 5,
   },
 });
 
