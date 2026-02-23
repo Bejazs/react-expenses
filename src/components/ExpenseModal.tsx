@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, Modal, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, Button, Modal, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Category } from '../models/Category';
 import { Expense } from '../models/Expense';
-import { toISODateString, parseToISOString } from '../utils/dateUtils';
+import { formatDateEuropean } from '../utils/dateUtils';
 
 /**
  * Props for the ExpenseModal component.
@@ -40,7 +41,8 @@ interface ExpenseModalProps {
 const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, initialExpense, categories }) => {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
-  const [date, setDate] = useState(toISODateString()); // YYYY-MM-DD
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
 
   useEffect(() => {
@@ -49,13 +51,13 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
         // Pre-fill fields if editing
         setDescription(initialExpense.description);
         setAmount(initialExpense.amount.toString());
-        setDate(toISODateString(initialExpense.date));
+        setDate(new Date(initialExpense.date));
         setSelectedCategoryId(initialExpense.categoryId);
       } else {
         // Clear fields if adding new
         setDescription('');
         setAmount('');
-        setDate(toISODateString());
+        setDate(new Date());
         if (categories.length > 0) {
           const defaultCat = categories.find(c => c.name === 'Other') || categories[0];
           setSelectedCategoryId(defaultCat?.id || '');
@@ -63,6 +65,14 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
       }
     }
   }, [visible, initialExpense, categories]);
+
+  const onChangeDate = (event: any, selectedDate?: Date) => {
+    const currentDate = selectedDate || date;
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    setDate(currentDate);
+  };
 
   /**
    * Validates input and triggers the onSave callback.
@@ -74,17 +84,11 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
       return;
     }
 
-    const finalDate = parseToISOString(date);
-    if (!finalDate) {
-      Alert.alert('Error', 'Invalid date format. Use YYYY-MM-DD');
-      return;
-    }
-
     onSave({
       id: initialExpense?.id,
       description,
       amount: numericAmount,
-      date: finalDate,
+      date: date.toISOString(),
       categoryId: selectedCategoryId,
     });
     onClose();
@@ -109,12 +113,37 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
             onChangeText={setAmount}
             keyboardType="numeric"
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Date (YYYY-MM-DD)"
-            value={date}
-            onChangeText={setDate}
-          />
+
+          <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
+            <Text>{formatDateEuropean(date)}</Text>
+          </TouchableOpacity>
+
+          {showDatePicker && Platform.OS === 'android' && (
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={date}
+              mode="date"
+              display="default"
+              onChange={onChangeDate}
+            />
+          )}
+
+          {showDatePicker && Platform.OS === 'ios' && (
+            <Modal transparent={true} animationType="slide" visible={showDatePicker} onRequestClose={() => setShowDatePicker(false)}>
+               <View style={styles.centeredView}>
+                  <View style={styles.modalView}>
+                     <DateTimePicker
+                        testID="dateTimePicker"
+                        value={date}
+                        mode="date"
+                        display="spinner"
+                        onChange={onChangeDate}
+                     />
+                     <Button title="Done" onPress={() => setShowDatePicker(false)} />
+                  </View>
+               </View>
+            </Modal>
+          )}
 
           <Text style={styles.label}>Select Category:</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categorySelector}>

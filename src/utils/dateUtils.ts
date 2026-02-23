@@ -57,3 +57,21 @@ export const safeParseDate = (date: string | number | Date): Date | null => {
     return null;
   }
 };
+
+/**
+ * Formats a date string or Date object into DD/MM/YYYY format (European).
+ * @param date The date to format (string or Date).
+ * @returns The formatted date string.
+ */
+export const formatDateEuropean = (date: string | Date): string => {
+  try {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return 'Invalid Date';
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  } catch (e) {
+    return 'Invalid Date';
+  }
+};
