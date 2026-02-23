@@ -5,6 +5,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Category } from '../models/Category';
 import { Expense } from '../models/Expense';
 import { formatDateEuropean } from '../utils/dateUtils';
+import { CategoryIcon } from './CategoryIcon';
 
 /**
  * Props for the ExpenseModal component.
