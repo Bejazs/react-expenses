@@ -158,7 +158,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
                 onPress={() => setSelectedCategoryId(category.id)}
               >
                 <View style={[styles.iconContainer, { backgroundColor: category.color }]}>
-                    <Ionicons name={category.icon as any} size={20} color="white" />
+                    <CategoryIcon icon={category.icon} size={20} color="white" />
                 </View>
                 <Text style={styles.categoryName} numberOfLines={1}>{category.name}</Text>
               </TouchableOpacity>

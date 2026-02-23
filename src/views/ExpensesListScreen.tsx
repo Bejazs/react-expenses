@@ -6,6 +6,7 @@ import { useSettingsViewModel } from '../viewmodels/SettingsViewModel';
 import { Expense } from '../models/Expense';
 import { formatDate } from '../utils/dateUtils';
 import { Ionicons } from '@expo/vector-icons';
+import { CategoryIcon } from '../components/CategoryIcon';
 import ExpenseModal from '../components/ExpenseModal';
 import { useIsFocused } from '@react-navigation/native';
 
@@ -86,7 +87,7 @@ const ExpensesListScreen = () => {
         onLongPress={() => confirmDeleteExpense(item.id)}
       >
         <View style={[styles.iconContainer, { backgroundColor: category?.color || '#ccc' }]}>
-            <Ionicons name={(category?.icon || 'help') as any} size={24} color="white" />
+            <CategoryIcon icon={category?.icon || 'help'} size={24} color="white" />
         </View>
         <View style={styles.details}>
             <Text style={styles.description}>{item.description}</Text>
