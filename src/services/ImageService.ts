@@ -1,16 +1,24 @@
 import * as FileSystem from 'expo-file-system';
 import { Platform } from 'react-native';
 
-const CUSTOM_ICONS_DIR = FileSystem.documentDirectory + 'custom_icons/';
+let customIconsDir: FileSystem.Directory | null = null;
+
+if (Platform.OS !== 'web') {
+  try {
+    const { Directory, Paths } = FileSystem;
+    customIconsDir = new Directory(Paths.document, 'custom_icons/');
+  } catch (e) {
+    console.warn('Failed to initialize FileSystem for images:', e);
+  }
+}
 
 /**
  * Ensures the custom icons directory exists.
  */
 const ensureDirExists = async () => {
-  if (Platform.OS === 'web') return;
-  const dirInfo = await FileSystem.getInfoAsync(CUSTOM_ICONS_DIR);
-  if (!dirInfo.exists) {
-    await FileSystem.makeDirectoryAsync(CUSTOM_ICONS_DIR, { intermediates: true });
+  if (Platform.OS === 'web' || !customIconsDir) return;
+  if (!customIconsDir.exists) {
+    customIconsDir.create();
   }
 };
 
@@ -30,12 +38,10 @@ export const saveCustomIcon = async (tempUri: string): Promise<string> => {
   try {
     await ensureDirExists();
     const fileName = tempUri.split('/').pop() || `icon_${Date.now()}.jpg`;
-    const newPath = CUSTOM_ICONS_DIR + fileName;
-    await FileSystem.copyAsync({
-      from: tempUri,
-      to: newPath
-    });
-    return newPath;
+    const sourceFile = new FileSystem.File(tempUri);
+    const destFile = new FileSystem.File(customIconsDir!, fileName);
+    sourceFile.copy(destFile);
+    return destFile.uri;
   } catch (error) {
     console.error('Error saving custom icon:', error);
     throw error;

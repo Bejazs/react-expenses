@@ -8,9 +8,16 @@ const DEFAULT_SETTINGS: Settings = {
   currency: 'EUR',
 };
 
-const getSettingsFileUri = () => {
-  return `${FileSystem.documentDirectory}${SETTINGS_FILE}`;
-};
+let settingsFile: FileSystem.File | null = null;
+
+if (Platform.OS !== 'web') {
+  try {
+    const { File, Paths } = FileSystem;
+    settingsFile = new File(Paths.document, SETTINGS_FILE);
+  } catch (e) {
+    console.warn('Failed to initialize FileSystem for settings:', e);
+  }
+}
 
 /**
  * Retrieves the application settings.
@@ -24,10 +31,8 @@ export const getSettings = async (): Promise<Settings> => {
   }
 
   try {
-    const fileUri = getSettingsFileUri();
-    const fileInfo = await FileSystem.getInfoAsync(fileUri);
-    if (fileInfo.exists) {
-      const fileContent = await FileSystem.readAsStringAsync(fileUri);
+    if (settingsFile?.exists) {
+      const fileContent = await settingsFile.text();
       return JSON.parse(fileContent);
     }
     await saveSettings(DEFAULT_SETTINGS);
@@ -50,8 +55,9 @@ export const saveSettings = async (settings: Settings): Promise<void> => {
   }
 
   try {
-    const fileUri = getSettingsFileUri();
-    await FileSystem.writeAsStringAsync(fileUri, JSON.stringify(settings, null, 2));
+    if (settingsFile) {
+      settingsFile.write(JSON.stringify(settings, null, 2));
+    }
   } catch (error) {
     console.error('Error saving settings:', error);
   }
