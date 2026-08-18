@@ -1,5 +1,6 @@
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
+import { Platform } from 'react-native';
 import Papa from 'papaparse';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 
@@ -21,12 +22,32 @@ export const pickAndReadFile = async (): Promise<string | null> => {
     const extension = file.name.split('.').pop()?.toLowerCase();
 
     if (extension === 'csv') {
-      const fileContent = await FileSystem.readAsStringAsync(file.uri);
+      let fileContent = '';
+      if (Platform.OS === 'web') {
+        const res = await fetch(file.uri);
+        fileContent = await res.text();
+      } else {
+        fileContent = await FileSystem.readAsStringAsync(file.uri);
+      }
       return parseCSV(fileContent);
     } else if (extension === 'pdf') {
-      // For PDF we read as base64 and parse via pdfjs
-      const fileContent = await FileSystem.readAsStringAsync(file.uri, { encoding: 'base64' });
-      return await parsePDF(fileContent);
+      let base64Content = '';
+      if (Platform.OS === 'web') {
+         const res = await fetch(file.uri);
+         const blob = await res.blob();
+         base64Content = await new Promise<string>((resolve, reject) => {
+           const reader = new FileReader();
+           reader.onloadend = () => {
+             const result = reader.result as string;
+             resolve(result.split(',')[1]);
+           };
+           reader.onerror = reject;
+           reader.readAsDataURL(blob);
+         });
+      } else {
+         base64Content = await FileSystem.readAsStringAsync(file.uri, { encoding: 'base64' });
+      }
+      return await parsePDF(base64Content);
     } else {
       throw new Error('Unsupported file type');
     }

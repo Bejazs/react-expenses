@@ -11,7 +11,10 @@
     "expensesByCategory": "Expenses by Category",
     "noExpensesThisMonth": "No expenses this month",
     "monthlyExpenses": "Monthly Expenses",
-    "noExpensesThisYear": "No expenses this year"
+    "noExpensesThisYear": "No expenses this year",
+    "totalIncomeCycle": "Total Income (Cycle)",
+    "totalSpentCycle": "Total Spent (Cycle)",
+    "possibleSavings": "Possible Savings"
   },
   "expenses": {
     "title": "Expenses",
@@ -29,11 +32,17 @@
     "currency": "Currency",
     "language": "Language",
     "aiAgent": "AI Agent",
-    "openaiApiKey": "OpenAI API Key",
-    "openaiApiKeyPlaceholder": "sk-...",
+    "apiKey": "API Key",
+    "apiKeyPlaceholder": "sk-...",
     "save": "Save",
     "english": "English",
-    "portuguese": "Portuguese"
+    "portuguese": "Portuguese",
+    "salarySettings": "Salary Config",
+    "baseSalary": "Base Salary",
+    "payday": "Payday (1-31)",
+    "calculationCycle": "Calculation Cycle",
+    "calendarMonth": "Calendar Month",
+    "salaryCycle": "Salary Cycle"
   },
   "expenseModal": {
     "addExpense": "Add Expense",
@@ -68,5 +77,13 @@
     "errorApi": "Error communicating with AI. Check your API key.",
     "errorGeneral": "An error occurred during import.",
     "expensesAdded": "expenses added."
+  },
+  "incomeModal": {
+    "addIncome": "Add Income",
+    "editIncome": "Edit Income",
+    "description": "Description (e.g. Freelance, Base Salary)",
+    "amount": "Amount",
+    "cancel": "Cancel",
+    "save": "Save"
   }
 }

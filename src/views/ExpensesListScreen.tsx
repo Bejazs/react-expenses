@@ -129,14 +129,15 @@ const ExpensesListScreen = () => {
         onPress={() => handleEditExpense(item)}
         onLongPress={() => confirmDeleteExpense(item.id)}
       >
-        <View style={[styles.iconContainer, { backgroundColor: category?.color || '#ccc' }]}>
+        <View style={[styles.iconContainer, { backgroundColor: category?.color || '#cbd5e1' }]}>
             <CategoryIcon icon={category?.icon || 'help'} size={24} color="white" />
         </View>
         <View style={styles.details}>
             <Text style={styles.description}>{item.description}</Text>
             <Text style={styles.categoryName}>{category?.name || 'Uncategorized'} • {dateStr}</Text>
         </View>
-        <Text style={styles.amount}>{currencySymbol}{item.amount.toFixed(2)}</Text>
+        <Text style={[styles.amount, { color: '#ef4444' }]}>-{currencySymbol}{item.amount.toFixed(2)}</Text>
+        <Ionicons name="chevron-forward" size={20} color="#9ca3af" style={{ marginLeft: 10 }} />
       </TouchableOpacity>
     );
   };
@@ -180,7 +181,7 @@ const ExpensesListScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#f8fafc',
   },
   headerRow: {
     padding: 15,
@@ -189,18 +190,23 @@ const styles = StyleSheet.create({
   },
   importButton: {
     flexDirection: 'row',
-    backgroundColor: '#007AFF',
-    padding: 10,
-    borderRadius: 8,
+    backgroundColor: '#6366f1',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
     alignItems: 'center',
-    elevation: 2,
+    elevation: 4,
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
   },
   importButtonDisabled: {
-    backgroundColor: '#99C7FF',
+    backgroundColor: '#a5b4fc',
   },
   importButtonText: {
     color: 'white',
-    fontWeight: 'bold',
+    fontWeight: '700',
     marginLeft: 8,
   },
   listContent: {
@@ -211,14 +217,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
-    padding: 15,
-    borderRadius: 10,
-    elevation: 2,
+    padding: 18,
+    borderRadius: 16,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
@@ -228,25 +238,28 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: 4,
   },
   categoryName: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '500',
   },
   amount: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 18,
+    fontWeight: '800',
   },
   emptyText: {
     textAlign: 'center',
-    marginTop: 50,
+    marginTop: 60,
     fontSize: 16,
-    color: '#666',
+    color: '#9ca3af',
+    fontWeight: '500',
   },
   separator: {
-    height: 10,
+    height: 12,
   }
 });
 

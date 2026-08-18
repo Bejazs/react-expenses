@@ -35,9 +35,21 @@ export default function App() {
 
             return <Ionicons name={iconName as any} size={size} color={color} />;
           },
-          tabBarActiveTintColor: '#007AFF',
-          tabBarInactiveTintColor: 'gray',
-          headerShown: true, // We can keep header or hide it if screens implement their own title properly
+          tabBarActiveTintColor: '#6366f1',
+          tabBarInactiveTintColor: '#9ca3af',
+          headerShown: false, 
+          tabBarStyle: {
+            backgroundColor: '#ffffff',
+            borderTopWidth: 0,
+            elevation: 10,
+            shadowColor: '#000',
+            shadowOpacity: 0.1,
+            shadowRadius: 10,
+            shadowOffset: { width: 0, height: -5 },
+            height: 60,
+            paddingBottom: 8,
+            paddingTop: 8,
+          },
         })}
       >
         <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ title: t('tabs.dashboard') }} />
