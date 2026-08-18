@@ -21,7 +21,7 @@ const ExpensesListScreen = () => {
   const { t } = useTranslation();
   const { expenses, loading, deleteExpense, updateExpense, loadExpenses, addExpense } = useExpenseViewModel();
   const { categories, loadCategories } = useCategoryViewModel();
-  const { currency, openaiApiKey, loadSettings } = useSettingsViewModel();
+  const { currency, aiApiKey, aiProvider, loadSettings } = useSettingsViewModel();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | undefined>(undefined);
   const [isImporting, setIsImporting] = useState(false);
@@ -81,7 +81,7 @@ const ExpensesListScreen = () => {
   };
 
   const handleImportAI = async () => {
-    if (!openaiApiKey) {
+    if (!aiApiKey) {
       Alert.alert('Error', t('ai.errorApi'));
       return;
     }
@@ -95,7 +95,7 @@ const ExpensesListScreen = () => {
         return; // User canceled
       }
 
-      const parsedExpenses = await analyzeStatement(textContent, categories, openaiApiKey);
+      const parsedExpenses = await analyzeStatement(textContent, categories, aiApiKey, aiProvider);
 
       if (parsedExpenses && parsedExpenses.length > 0) {
         let count = 0;

@@ -10,7 +10,8 @@ export interface AIExpense {
 export const analyzeStatement = async (
   text: string,
   categories: Category[],
-  apiKey: string
+  apiKey: string,
+  provider: string = 'openai'
 ): Promise<AIExpense[]> => {
   if (!apiKey) {
     throw new Error('API Key is missing');
@@ -43,27 +44,55 @@ ${text}
 `;
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'system', content: prompt }],
-        temperature: 0.1,
-      }),
-    });
+    let rawContent = '';
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API Error:', errorText);
-      throw new Error(`OpenAI API returned status ${response.status}`);
+    if (provider === 'anthropic') {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-haiku-20240307',
+          max_tokens: 1024,
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.1,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Anthropic API Error:', errorText);
+        throw new Error(`Anthropic API returned status ${response.status}`);
+      }
+
+      const data = await response.json();
+      rawContent = data.content[0].text.trim();
+    } else {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'system', content: prompt }],
+          temperature: 0.1,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('OpenAI API Error:', errorText);
+        throw new Error(`OpenAI API returned status ${response.status}`);
+      }
+
+      const data = await response.json();
+      rawContent = data.choices[0].message.content.trim();
     }
-
-    const data = await response.json();
-    const rawContent = data.choices[0].message.content.trim();
 
     // Try to parse the JSON directly
     try {

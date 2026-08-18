@@ -12,9 +12,10 @@ import { useTranslation } from 'react-i18next';
  */
 const SettingsScreen = () => {
   const { t, i18n } = useTranslation();
-  const { currency, openaiApiKey, setCurrency, updateOpenaiApiKey, loadSettings } = useSettingsViewModel();
+  const { currency, aiApiKey, aiProvider, setCurrency, updateAISettings, loadSettings } = useSettingsViewModel();
   const isFocused = useIsFocused();
-  const [apiKeyInput, setApiKeyInput] = useState(openaiApiKey || '');
+  const [apiKeyInput, setApiKeyInput] = useState(aiApiKey || '');
+  const [providerInput, setProviderInput] = useState(aiProvider || 'openai');
 
   useEffect(() => {
     if (isFocused) {
@@ -23,8 +24,9 @@ const SettingsScreen = () => {
   }, [isFocused]);
 
   useEffect(() => {
-    setApiKeyInput(openaiApiKey || '');
-  }, [openaiApiKey]);
+    setApiKeyInput(aiApiKey || '');
+    setProviderInput(aiProvider || 'openai');
+  }, [aiApiKey, aiProvider]);
 
   const handleCurrencyChange = (newCurrency: Currency) => {
     setCurrency(newCurrency);
@@ -94,6 +96,32 @@ const SettingsScreen = () => {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t('settings.aiAgent')}</Text>
+
+        <Text style={styles.label}>AI Provider:</Text>
+        <View style={styles.optionsContainer}>
+          <TouchableOpacity
+            style={[
+              styles.optionButton,
+              providerInput === 'openai' && styles.selectedOption,
+            ]}
+            onPress={() => setProviderInput('openai')}
+          >
+            <Text style={[styles.optionText, providerInput === 'openai' && styles.selectedOptionText]}>OpenAI</Text>
+            {providerInput === 'openai' && <Ionicons name="checkmark-circle" size={24} color="white" />}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.optionButton,
+              providerInput === 'anthropic' && styles.selectedOption,
+            ]}
+            onPress={() => setProviderInput('anthropic')}
+          >
+            <Text style={[styles.optionText, providerInput === 'anthropic' && styles.selectedOptionText]}>Anthropic</Text>
+            {providerInput === 'anthropic' && <Ionicons name="checkmark-circle" size={24} color="white" />}
+          </TouchableOpacity>
+        </View>
+
         <Text style={styles.label}>{t('settings.openaiApiKey')}:</Text>
         <TextInput
           style={styles.input}
@@ -102,7 +130,7 @@ const SettingsScreen = () => {
           onChangeText={setApiKeyInput}
           secureTextEntry
         />
-        <Button title={t('settings.save')} onPress={() => updateOpenaiApiKey(apiKeyInput)} />
+        <Button title={t('settings.save')} onPress={() => updateAISettings(apiKeyInput, providerInput)} />
       </View>
     </View>
   );

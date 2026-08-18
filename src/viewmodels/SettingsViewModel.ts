@@ -14,7 +14,8 @@ import { getSettings, saveSettings } from '../services/SettingsService';
  */
 export const useSettingsViewModel = () => {
   const [currency, setCurrencyState] = useState<Currency>('EUR');
-  const [openaiApiKey, setOpenaiApiKey] = useState<string | undefined>(undefined);
+  const [aiApiKey, setAiApiKey] = useState<string | undefined>(undefined);
+  const [aiProvider, setAiProvider] = useState<string>('openai');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,7 +29,8 @@ export const useSettingsViewModel = () => {
     setLoading(true);
     const settings = await getSettings();
     setCurrencyState(settings.currency);
-    setOpenaiApiKey(settings.openaiApiKey);
+    setAiApiKey(settings.aiApiKey);
+    setAiProvider(settings.aiProvider || 'openai');
     setLoading(false);
   };
 
@@ -39,18 +41,17 @@ export const useSettingsViewModel = () => {
    */
   const setCurrency = async (newCurrency: Currency) => {
     setCurrencyState(newCurrency);
-    await saveSettings({ currency: newCurrency, openaiApiKey });
+    await saveSettings({ currency: newCurrency, aiApiKey, aiProvider });
   };
 
   /**
-   * Updates the OpenAI API Key setting.
-   *
-   * @param {string} newKey - The new key to set.
+   * Updates the AI settings.
    */
-  const updateOpenaiApiKey = async (newKey: string) => {
-    setOpenaiApiKey(newKey);
-    await saveSettings({ currency, openaiApiKey: newKey });
+  const updateAISettings = async (newKey: string, newProvider: string) => {
+    setAiApiKey(newKey);
+    setAiProvider(newProvider);
+    await saveSettings({ currency, aiApiKey: newKey, aiProvider: newProvider });
   };
 
-  return { currency, openaiApiKey, loading, setCurrency, updateOpenaiApiKey, loadSettings };
+  return { currency, aiApiKey, aiProvider, loading, setCurrency, updateAISettings, loadSettings };
 };

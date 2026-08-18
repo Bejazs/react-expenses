@@ -14,7 +14,12 @@ export interface Settings {
   currency: Currency;
 
   /**
-   * The OpenAI API key for the AI agent feature.
+   * The AI Provider selected (e.g. 'openai', 'anthropic', etc.)
    */
-  openaiApiKey?: string;
+  aiProvider?: string;
+
+  /**
+   * The API key for the selected AI agent feature.
+   */
+  aiApiKey?: string;
 }
