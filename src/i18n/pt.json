@@ -1,0 +1,72 @@
+{
+  "tabs": {
+    "dashboard": "Painel",
+    "expenses": "Despesas",
+    "categories": "Categorias",
+    "settings": "Configurações"
+  },
+  "dashboard": {
+    "title": "Painel",
+    "totalSpent": "Total Gasto (Este Mês)",
+    "expensesByCategory": "Despesas por Categoria",
+    "noExpensesThisMonth": "Sem despesas este mês",
+    "monthlyExpenses": "Despesas Mensais",
+    "noExpensesThisYear": "Sem despesas este ano"
+  },
+  "expenses": {
+    "title": "Despesas",
+    "noExpenses": "Ainda sem despesas. Adicione uma!",
+    "importStatement": "Importar Extrato (AI)"
+  },
+  "categories": {
+    "title": "Categorias",
+    "noCategories": "Ainda sem categorias.",
+    "addCategory": "Adicionar Categoria",
+    "customIcon": "Ícone Personalizado"
+  },
+  "settings": {
+    "title": "Configurações",
+    "currency": "Moeda",
+    "language": "Idioma",
+    "aiAgent": "Agente AI",
+    "openaiApiKey": "Chave API da OpenAI",
+    "openaiApiKeyPlaceholder": "sk-...",
+    "save": "Guardar",
+    "english": "Inglês",
+    "portuguese": "Português"
+  },
+  "expenseModal": {
+    "addExpense": "Adicionar Despesa",
+    "editExpense": "Editar Despesa",
+    "description": "Descrição",
+    "amount": "Valor",
+    "date": "Data",
+    "category": "Categoria",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "noCategories": "Sem categorias disponíveis",
+    "errorDescription": "Por favor, introduza uma descrição.",
+    "errorAmount": "Por favor, introduza um valor válido.",
+    "errorCategory": "Por favor, selecione uma categoria."
+  },
+  "categoryModal": {
+    "addCategory": "Adicionar Categoria",
+    "name": "Nome",
+    "selectIcon": "Selecionar Ícone",
+    "color": "Cor",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "uploadImage": "Carregar Imagem",
+    "errorName": "Por favor, introduza um nome para a categoria."
+  },
+  "ai": {
+    "importing": "A importar...",
+    "analyzing": "A analisar extrato...",
+    "success": "Importação concluída!",
+    "errorNoFile": "Nenhum ficheiro selecionado.",
+    "errorParsing": "Erro ao ler o ficheiro. Verifique o formato.",
+    "errorApi": "Erro ao comunicar com a AI. Verifique a sua API key.",
+    "errorGeneral": "Ocorreu um erro durante a importação.",
+    "expensesAdded": "despesas adicionadas."
+  }
+}

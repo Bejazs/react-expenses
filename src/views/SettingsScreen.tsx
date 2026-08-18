@@ -1,17 +1,21 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Button } from 'react-native';
 import { useSettingsViewModel } from '../viewmodels/SettingsViewModel';
 import { Currency } from '../models/Settings';
 import { Ionicons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Settings Screen.
  * Allows the user to configure application settings, such as currency.
  */
 const SettingsScreen = () => {
-  const { currency, setCurrency, loadSettings } = useSettingsViewModel();
+  const { t, i18n } = useTranslation();
+  const { currency, aiApiKey, aiProvider, setCurrency, updateAISettings, loadSettings } = useSettingsViewModel();
   const isFocused = useIsFocused();
+  const [apiKeyInput, setApiKeyInput] = useState(aiApiKey || '');
+  const [providerInput, setProviderInput] = useState(aiProvider || 'openai');
 
   useEffect(() => {
     if (isFocused) {
@@ -19,16 +23,25 @@ const SettingsScreen = () => {
     }
   }, [isFocused]);
 
+  useEffect(() => {
+    setApiKeyInput(aiApiKey || '');
+    setProviderInput(aiProvider || 'openai');
+  }, [aiApiKey, aiProvider]);
+
   const handleCurrencyChange = (newCurrency: Currency) => {
     setCurrency(newCurrency);
   };
 
+  const handleLanguageChange = (lang: string) => {
+    i18n.changeLanguage(lang);
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Settings</Text>
+      <Text style={styles.title}>{t('settings.title')}</Text>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Currency</Text>
+        <Text style={styles.sectionTitle}>{t('settings.currency')}</Text>
         <View style={styles.optionsContainer}>
           <TouchableOpacity
             style={[
@@ -52,6 +65,83 @@ const SettingsScreen = () => {
             {currency === 'USD' && <Ionicons name="checkmark-circle" size={24} color="white" />}
           </TouchableOpacity>
         </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('settings.language')}</Text>
+        <View style={styles.optionsContainer}>
+          <TouchableOpacity
+            style={[
+              styles.optionButton,
+              i18n.language === 'en' && styles.selectedOption,
+            ]}
+            onPress={() => handleLanguageChange('en')}
+          >
+            <Text style={[styles.optionText, i18n.language === 'en' && styles.selectedOptionText]}>{t('settings.english')}</Text>
+            {i18n.language === 'en' && <Ionicons name="checkmark-circle" size={24} color="white" />}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.optionButton,
+              i18n.language === 'pt' && styles.selectedOption,
+            ]}
+            onPress={() => handleLanguageChange('pt')}
+          >
+            <Text style={[styles.optionText, i18n.language === 'pt' && styles.selectedOptionText]}>{t('settings.portuguese')}</Text>
+            {i18n.language === 'pt' && <Ionicons name="checkmark-circle" size={24} color="white" />}
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('settings.aiAgent')}</Text>
+
+        <Text style={styles.label}>AI Provider:</Text>
+        <View style={styles.optionsContainer}>
+          <TouchableOpacity
+            style={[
+              styles.optionButton,
+              providerInput === 'openai' && styles.selectedOption,
+            ]}
+            onPress={() => setProviderInput('openai')}
+          >
+            <Text style={[styles.optionText, providerInput === 'openai' && styles.selectedOptionText]}>OpenAI</Text>
+            {providerInput === 'openai' && <Ionicons name="checkmark-circle" size={24} color="white" />}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.optionButton,
+              providerInput === 'anthropic' && styles.selectedOption,
+            ]}
+            onPress={() => setProviderInput('anthropic')}
+          >
+            <Text style={[styles.optionText, providerInput === 'anthropic' && styles.selectedOptionText]}>Anthropic</Text>
+            {providerInput === 'anthropic' && <Ionicons name="checkmark-circle" size={24} color="white" />}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.optionButton,
+              providerInput === 'gemini' && styles.selectedOption,
+            ]}
+            onPress={() => setProviderInput('gemini')}
+          >
+            <Text style={[styles.optionText, providerInput === 'gemini' && styles.selectedOptionText]}>Gemini</Text>
+            {providerInput === 'gemini' && <Ionicons name="checkmark-circle" size={24} color="white" />}
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.label}>{t('settings.openaiApiKey')}:</Text>
+        <TextInput
+          style={styles.input}
+          placeholder={t('settings.openaiApiKeyPlaceholder')}
+          value={apiKeyInput}
+          onChangeText={setApiKeyInput}
+          secureTextEntry
+        />
+        <Button title={t('settings.save')} onPress={() => updateAISettings(apiKeyInput, providerInput)} />
       </View>
     </View>
   );
@@ -110,6 +200,17 @@ const styles = StyleSheet.create({
   selectedOptionText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
   },
 });
 

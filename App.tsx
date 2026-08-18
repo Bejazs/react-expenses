@@ -7,10 +7,14 @@ import ExpensesListScreen from './src/views/ExpensesListScreen';
 import CategoriesScreen from './src/views/CategoriesScreen';
 import SettingsScreen from './src/views/SettingsScreen';
 import { StatusBar } from 'expo-status-bar';
+import './src/i18n'; // Initialize i18n
+import { useTranslation } from 'react-i18next';
 
 const Tab = createBottomTabNavigator();
 
 export default function App() {
+  const { t } = useTranslation();
+
   return (
     <NavigationContainer>
       <StatusBar style="auto" />
@@ -36,12 +40,13 @@ export default function App() {
           headerShown: true, // We can keep header or hide it if screens implement their own title properly
         })}
       >
-        <Tab.Screen name="Dashboard" component={DashboardScreen} />
-        <Tab.Screen name="Expenses" component={ExpensesListScreen} />
-        <Tab.Screen name="Categories" component={CategoriesScreen} />
+        <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ title: t('tabs.dashboard') }} />
+        <Tab.Screen name="Expenses" component={ExpensesListScreen} options={{ title: t('tabs.expenses') }} />
+        <Tab.Screen name="Categories" component={CategoriesScreen} options={{ title: t('tabs.categories') }} />
         <Tab.Screen
           name="Settings"
           component={SettingsScreen}
+          options={{ title: t('tabs.settings') }}
         />
       </Tab.Navigator>
     </NavigationContainer>

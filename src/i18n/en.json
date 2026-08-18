@@ -1,0 +1,72 @@
+{
+  "tabs": {
+    "dashboard": "Dashboard",
+    "expenses": "Expenses",
+    "categories": "Categories",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalSpent": "Total Spent (This Month)",
+    "expensesByCategory": "Expenses by Category",
+    "noExpensesThisMonth": "No expenses this month",
+    "monthlyExpenses": "Monthly Expenses",
+    "noExpensesThisYear": "No expenses this year"
+  },
+  "expenses": {
+    "title": "Expenses",
+    "noExpenses": "No expenses yet. Add one!",
+    "importStatement": "Import AI Statement"
+  },
+  "categories": {
+    "title": "Categories",
+    "noCategories": "No categories yet.",
+    "addCategory": "Add Category",
+    "customIcon": "Custom Icon"
+  },
+  "settings": {
+    "title": "Settings",
+    "currency": "Currency",
+    "language": "Language",
+    "aiAgent": "AI Agent",
+    "openaiApiKey": "OpenAI API Key",
+    "openaiApiKeyPlaceholder": "sk-...",
+    "save": "Save",
+    "english": "English",
+    "portuguese": "Portuguese"
+  },
+  "expenseModal": {
+    "addExpense": "Add Expense",
+    "editExpense": "Edit Expense",
+    "description": "Description",
+    "amount": "Amount",
+    "date": "Date",
+    "category": "Category",
+    "cancel": "Cancel",
+    "save": "Save",
+    "noCategories": "No categories available",
+    "errorDescription": "Please enter a description.",
+    "errorAmount": "Please enter a valid amount.",
+    "errorCategory": "Please select a category."
+  },
+  "categoryModal": {
+    "addCategory": "Add Category",
+    "name": "Name",
+    "selectIcon": "Select Icon",
+    "color": "Color",
+    "cancel": "Cancel",
+    "save": "Save",
+    "uploadImage": "Upload Image",
+    "errorName": "Please enter a category name."
+  },
+  "ai": {
+    "importing": "Importing...",
+    "analyzing": "Analyzing statement...",
+    "success": "Import successful!",
+    "errorNoFile": "No file selected.",
+    "errorParsing": "Error parsing file. Please check the format.",
+    "errorApi": "Error communicating with AI. Check your API key.",
+    "errorGeneral": "An error occurred during import.",
+    "expensesAdded": "expenses added."
+  }
+}
