@@ -70,6 +70,30 @@ ${text}
 
       const data = await response.json();
       rawContent = data.content[0].text.trim();
+    } else if (provider === 'gemini') {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: prompt }]
+          }],
+          generationConfig: {
+            temperature: 0.1,
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Gemini API Error:', errorText);
+        throw new Error(`Gemini API returned status ${response.status}`);
+      }
+
+      const data = await response.json();
+      rawContent = data.candidates[0].content.parts[0].text.trim();
     } else {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',

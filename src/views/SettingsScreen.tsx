@@ -120,6 +120,17 @@ const SettingsScreen = () => {
             <Text style={[styles.optionText, providerInput === 'anthropic' && styles.selectedOptionText]}>Anthropic</Text>
             {providerInput === 'anthropic' && <Ionicons name="checkmark-circle" size={24} color="white" />}
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.optionButton,
+              providerInput === 'gemini' && styles.selectedOption,
+            ]}
+            onPress={() => setProviderInput('gemini')}
+          >
+            <Text style={[styles.optionText, providerInput === 'gemini' && styles.selectedOptionText]}>Gemini</Text>
+            {providerInput === 'gemini' && <Ionicons name="checkmark-circle" size={24} color="white" />}
+          </TouchableOpacity>
         </View>
 
         <Text style={styles.label}>{t('settings.openaiApiKey')}:</Text>
