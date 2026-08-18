@@ -30,9 +30,20 @@ const ensureDirExists = async () => {
 export const saveCustomIcon = async (tempUri: string): Promise<string> => {
   if (Platform.OS === 'web') {
     // On web, we can't save to file system easily.
-    // For now, we return the data URI or blob URL as is.
-    // Note: Blob URLs might expire. Converting to Base64 is safer for persistence in localStorage.
-    return tempUri;
+    // Converting Blob URLs to Base64 ensures they do not expire and can be safely persisted in localStorage.
+    try {
+      const response = await fetch(tempUri);
+      const blob = await response.blob();
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('Error converting Blob to Base64:', error);
+      return tempUri; // Fallback to original URI if conversion fails
+    }
   }
 
   try {
