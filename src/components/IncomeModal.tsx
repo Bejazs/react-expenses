@@ -1,73 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, Modal, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, TextInput, Button, Modal, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Category } from '../models/Category';
-import { Expense } from '../models/Expense';
+import { Income } from '../models/Income';
 import { formatDateEuropean } from '../utils/dateUtils';
-import { CategoryIcon } from './CategoryIcon';
 import { useTranslation } from 'react-i18next';
+import { Ionicons } from '@expo/vector-icons';
 
-/**
- * Props for the ExpenseModal component.
- */
-interface ExpenseModalProps {
-  /**
-   * Whether the modal is currently visible.
-   */
+interface IncomeModalProps {
   visible: boolean;
-  /**
-   * Callback function when the modal is requested to be closed.
-   */
   onClose: () => void;
-  /**
-   * Callback function when the expense is saved.
-   * Passes an object with expense details. ID is optional for new expenses.
-   */
-  onSave: (expense: Omit<Expense, 'id'> & { id?: string }) => void;
-  /**
-   * The expense object to edit, if editing an existing expense.
-   * If null/undefined, the modal is in "Add" mode.
-   */
-  initialExpense?: Expense;
-  /**
-   * The list of available categories to select from.
-   */
-  categories: Category[];
+  onSave: (income: Omit<Income, 'id' | 'isAutomatic'> & { id?: string }) => void;
+  initialIncome?: Income;
 }
 
-/**
- * A modal component for adding or editing an expense.
- * It provides input fields for description, amount, date, and category selection.
- */
-const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, initialExpense, categories }) => {
+const IncomeModal: React.FC<IncomeModalProps> = ({ visible, onClose, onSave, initialIncome }) => {
   const { t } = useTranslation();
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
 
   useEffect(() => {
     if (visible) {
-      if (initialExpense) {
-        // Pre-fill fields if editing
-        setDescription(initialExpense.description);
-        setAmount(initialExpense.amount.toString());
-        setDate(new Date(initialExpense.date));
-        setSelectedCategoryId(initialExpense.categoryId);
+      if (initialIncome) {
+        setDescription(initialIncome.description);
+        setAmount(initialIncome.amount.toString());
+        setDate(new Date(initialIncome.date));
       } else {
-        // Clear fields if adding new
         setDescription('');
         setAmount('');
         setDate(new Date());
-        if (categories.length > 0) {
-          const defaultCat = categories.find(c => c.name === 'Other') || categories[0];
-          setSelectedCategoryId(defaultCat?.id || '');
-        }
       }
     }
-  }, [visible, initialExpense, categories]);
+  }, [visible, initialIncome]);
 
   const onChangeDate = (event: any, selectedDate?: Date) => {
     const currentDate = selectedDate || date;
@@ -77,30 +42,18 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
     setDate(currentDate);
   };
 
-  /**
-   * Validates input and triggers the onSave callback.
-   */
   const handleSave = () => {
     const numericAmount = parseFloat(amount);
-    if (!description) {
-      Alert.alert('Error', t('expenseModal.errorDescription'));
-      return;
-    }
-    if (isNaN(numericAmount)) {
-      Alert.alert('Error', t('expenseModal.errorAmount'));
-      return;
-    }
-    if (!selectedCategoryId) {
-      Alert.alert('Error', t('expenseModal.errorCategory'));
+    if (!description || isNaN(numericAmount)) {
+      // Basic validation
       return;
     }
 
     onSave({
-      id: initialExpense?.id,
+      id: initialIncome?.id,
       description,
       amount: numericAmount,
       date: date.toISOString(),
-      categoryId: selectedCategoryId,
     });
     onClose();
   };
@@ -109,24 +62,27 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
     <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          <Text style={styles.modalTitle}>{initialExpense ? t('expenseModal.editExpense') : t('expenseModal.addExpense')}</Text>
+          <Text style={styles.modalTitle}>{initialIncome ? t('incomeModal.editIncome') : t('incomeModal.addIncome')}</Text>
 
           <TextInput
             style={styles.input}
-            placeholder={t('expenseModal.description')}
+            placeholder={t('incomeModal.description')}
             value={description}
             onChangeText={setDescription}
           />
           <TextInput
             style={styles.input}
-            placeholder={t('expenseModal.amount')}
+            placeholder={t('incomeModal.amount')}
             value={amount}
             onChangeText={setAmount}
             keyboardType="numeric"
           />
 
           <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
-            <Text>{formatDateEuropean(date)}</Text>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+               <Ionicons name="calendar-outline" size={20} color="gray" style={{marginRight: 10}} />
+               <Text>{formatDateEuropean(date)}</Text>
+            </View>
           </TouchableOpacity>
 
           {showDatePicker && Platform.OS === 'android' && (
@@ -158,32 +114,12 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
             </Modal>
           )}
 
-          <Text style={styles.label}>{t('expenseModal.category')}:</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categorySelector}>
-            {categories.map((category) => (
-              <TouchableOpacity
-                key={category.id}
-                style={[
-                  styles.categoryOption,
-                  selectedCategoryId === category.id && styles.selectedCategoryOption,
-                  { borderColor: selectedCategoryId === category.id ? category.color : 'transparent' }
-                ]}
-                onPress={() => setSelectedCategoryId(category.id)}
-              >
-                <View style={[styles.iconContainer, { backgroundColor: category.color }]}>
-                    <CategoryIcon icon={category.icon} size={20} color="white" />
-                </View>
-                <Text style={styles.categoryName} numberOfLines={1}>{category.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-                <Text style={styles.cancelButtonText}>{t('expenseModal.cancel')}</Text>
+                <Text style={styles.cancelButtonText}>{t('incomeModal.cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.saveButtonText}>{t('expenseModal.save')}</Text>
+                <Text style={styles.saveButtonText}>{t('incomeModal.save')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -206,10 +142,7 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'stretch',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.15,
     shadowRadius: 20,
     elevation: 8,
@@ -226,39 +159,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     padding: 10,
     borderRadius: 5,
-    marginBottom: 10,
-  },
-  label: {
-    fontWeight: 'bold',
-    marginBottom: 5,
-    marginTop: 5,
-  },
-  categorySelector: {
-    marginBottom: 20,
-    maxHeight: 90,
-  },
-  categoryOption: {
-    alignItems: 'center',
-    marginRight: 10,
-    padding: 5,
-    borderWidth: 2,
-    borderRadius: 10,
-    width: 70,
-  },
-  selectedCategoryOption: {
-    backgroundColor: '#f9f9f9',
-  },
-  iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 5,
-  },
-  categoryName: {
-    fontSize: 10,
-    textAlign: 'center',
+    marginBottom: 15,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -281,10 +182,10 @@ const styles = StyleSheet.create({
   saveButton: {
     flex: 1,
     paddingVertical: 14,
-    backgroundColor: '#6366f1',
+    backgroundColor: '#10b981',
     borderRadius: 12,
     alignItems: 'center',
-    shadowColor: '#6366f1',
+    shadowColor: '#10b981',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
@@ -309,4 +210,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default ExpenseModal;
+export default IncomeModal;

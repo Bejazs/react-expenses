@@ -22,4 +22,21 @@ export interface Settings {
    * The API key for the selected AI agent feature.
    */
   aiApiKey?: string;
+
+  /**
+   * The base salary of the user.
+   */
+  baseSalary?: number;
+
+  /**
+   * The payday (day of the month, 1-31) when the salary is expected.
+   */
+  payday?: number;
+
+  /**
+   * The cycle mode for Dashboard calculation.
+   * 'calendar' calculates per month (e.g. Nov 1st-30th)
+   * 'salary' calculates from payday to next payday.
+   */
+  calculationCycle?: 'calendar' | 'salary';
 }

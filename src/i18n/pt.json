@@ -11,7 +11,10 @@
     "expensesByCategory": "Despesas por Categoria",
     "noExpensesThisMonth": "Sem despesas este mês",
     "monthlyExpenses": "Despesas Mensais",
-    "noExpensesThisYear": "Sem despesas este ano"
+    "noExpensesThisYear": "Sem despesas este ano",
+    "totalIncomeCycle": "Total de Rendimentos (Ciclo)",
+    "totalSpentCycle": "Total Gasto (Ciclo)",
+    "possibleSavings": "Poupanças Possíveis"
   },
   "expenses": {
     "title": "Despesas",
@@ -29,11 +32,17 @@
     "currency": "Moeda",
     "language": "Idioma",
     "aiAgent": "Agente AI",
-    "openaiApiKey": "Chave API da OpenAI",
-    "openaiApiKeyPlaceholder": "sk-...",
+    "apiKey": "Chave de API",
+    "apiKeyPlaceholder": "sk-...",
     "save": "Guardar",
     "english": "Inglês",
-    "portuguese": "Português"
+    "portuguese": "Português",
+    "salarySettings": "Configuração Salarial",
+    "baseSalary": "Salário Base",
+    "payday": "Dia de Pagamento (1-31)",
+    "calculationCycle": "Ciclo de Cálculo",
+    "calendarMonth": "Mês Civil",
+    "salaryCycle": "Ciclo Salarial"
   },
   "expenseModal": {
     "addExpense": "Adicionar Despesa",
@@ -68,5 +77,13 @@
     "errorApi": "Erro ao comunicar com a AI. Verifique a sua API key.",
     "errorGeneral": "Ocorreu um erro durante a importação.",
     "expensesAdded": "despesas adicionadas."
+  },
+  "incomeModal": {
+    "addIncome": "Adicionar Rendimento",
+    "editIncome": "Editar Rendimento",
+    "description": "Descrição (ex: Part-time, Salário Base)",
+    "amount": "Valor",
+    "cancel": "Cancelar",
+    "save": "Guardar"
   }
 }
