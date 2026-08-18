@@ -7,6 +7,7 @@ import { Category } from '../models/Category';
 import * as ImagePicker from 'expo-image-picker';
 import { saveCustomIcon } from '../services/ImageService';
 import { ICON_NAMES } from '../utils/iconUtils';
+import { useTranslation } from 'react-i18next';
 
 // Available colors for selection
 const COLORS = ['#FF6347', '#4682B4', '#9370DB', '#20B2AA', '#808080', '#FFA500', '#FF4500', '#32CD32'];
@@ -16,6 +17,7 @@ const COLORS = ['#FF6347', '#4682B4', '#9370DB', '#20B2AA', '#808080', '#FFA500'
  * Allows creating new categories with custom icons and colors, and deleting existing ones.
  */
 const CategoriesScreen = () => {
+  const { t } = useTranslation();
   const { categories, loading, addCategory, deleteCategory } = useCategoryViewModel();
   const [name, setName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('help-circle'); // Default icon
@@ -39,7 +41,7 @@ const CategoriesScreen = () => {
       setSelectedIcon('help-circle');
       setSelectedColor(COLORS[0]);
     } else {
-      Alert.alert('Error', 'Please enter a category name');
+      Alert.alert('Error', t('categoryModal.errorName'));
     }
   };
 
@@ -49,8 +51,8 @@ const CategoriesScreen = () => {
    */
   const handleDeleteCategory = (id: string) => {
     Alert.alert(
-      'Delete Category',
-      'Are you sure you want to delete this category?',
+      'Delete',
+      'Are you sure?',
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Delete', style: 'destructive', onPress: () => deleteCategory(id) },
@@ -110,12 +112,12 @@ const CategoriesScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Categories</Text>
+      <Text style={styles.title}>{t('categories.title')}</Text>
 
       <View style={styles.form}>
         <TextInput
           style={styles.input}
-          placeholder="Category Name"
+          placeholder={t('categoryModal.name')}
           value={name}
           onChangeText={setName}
         />
@@ -125,10 +127,10 @@ const CategoriesScreen = () => {
             <View style={[styles.selectedIconPreview, { backgroundColor: selectedColor }]}>
                 <CategoryIcon icon={selectedIcon} size={30} color="white" />
             </View>
-            <Button title="Select Icon" onPress={() => setIconModalVisible(true)} />
+            <Button title={t('categoryModal.selectIcon')} onPress={() => setIconModalVisible(true)} />
         </View>
 
-        <Text style={styles.label}>Color:</Text>
+        <Text style={styles.label}>{t('categoryModal.color')}:</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.selector}>
           {COLORS.map((color) => (
             <TouchableOpacity
@@ -143,7 +145,7 @@ const CategoriesScreen = () => {
           ))}
         </ScrollView>
 
-        <Button title="Add Category" onPress={handleAddCategory} />
+        <Button title={t('categories.addCategory')} onPress={handleAddCategory} />
       </View>
 
       <FlatList
@@ -160,7 +162,7 @@ const CategoriesScreen = () => {
       >
           <View style={styles.modalContainer}>
               <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Select Icon</Text>
+                  <Text style={styles.modalTitle}>{t('categoryModal.selectIcon')}</Text>
                   <TouchableOpacity onPress={() => setIconModalVisible(false)}>
                       <Ionicons name="close" size={28} color="black" />
                   </TouchableOpacity>
@@ -169,7 +171,7 @@ const CategoriesScreen = () => {
               <View style={styles.modalActions}>
                   <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
                       <Ionicons name="images" size={20} color="white" />
-                      <Text style={styles.uploadButtonText}>Upload from Gallery</Text>
+                      <Text style={styles.uploadButtonText}>{t('categoryModal.uploadImage')}</Text>
                   </TouchableOpacity>
               </View>
 

@@ -8,6 +8,7 @@ import ExpenseModal from '../components/ExpenseModal';
 import { Ionicons } from '@expo/vector-icons';
 import { safeParseDate } from '../utils/dateUtils';
 import { useIsFocused } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -17,6 +18,7 @@ const screenWidth = Dimensions.get('window').width;
  * a pie chart breakdown by category, and a bar chart of monthly history.
  */
 const DashboardScreen = () => {
+  const { t } = useTranslation();
   const { expenses, loadExpenses, addExpense } = useExpenseViewModel();
   const { categories, loadCategories } = useCategoryViewModel();
   const { currency, loadSettings } = useSettingsViewModel();
@@ -112,16 +114,16 @@ const DashboardScreen = () => {
         contentContainerStyle={styles.scrollContent}
         refreshControl={<RefreshControl refreshing={false} onRefresh={() => { loadExpenses(); loadSettings(); }} />}
       >
-        <Text style={styles.title}>Dashboard</Text>
+        <Text style={styles.title}>{t('dashboard.title')}</Text>
 
         <View style={styles.card}>
-            <Text style={styles.cardTitle}>Total Spent (This Month)</Text>
+            <Text style={styles.cardTitle}>{t('dashboard.totalSpent')}</Text>
             <Text style={styles.totalAmount}>{currencySymbol}{totalSpent.toFixed(2)}</Text>
         </View>
 
         {pieData.length > 0 ? (
             <View style={styles.card}>
-                <Text style={styles.cardTitle}>Expenses by Category</Text>
+                <Text style={styles.cardTitle}>{t('dashboard.expensesByCategory')}</Text>
                 <PieChart
                     data={pieData}
                     width={screenWidth - 60}
@@ -136,13 +138,13 @@ const DashboardScreen = () => {
             </View>
         ) : (
             <View style={styles.card}>
-                <Text style={styles.cardTitle}>Expenses by Category</Text>
-                <Text style={{textAlign: 'center', margin: 20}}>No expenses this month</Text>
+                <Text style={styles.cardTitle}>{t('dashboard.expensesByCategory')}</Text>
+                <Text style={{textAlign: 'center', margin: 20}}>{t('dashboard.noExpensesThisMonth')}</Text>
             </View>
         )}
 
         <View style={styles.card}>
-            <Text style={styles.cardTitle}>Monthly Expenses</Text>
+            <Text style={styles.cardTitle}>{t('dashboard.monthlyExpenses')}</Text>
             <BarChart
                 data={barData}
                 width={screenWidth - 60}

@@ -12,4 +12,9 @@ export interface Settings {
    * The selected currency for the application.
    */
   currency: Currency;
+
+  /**
+   * The OpenAI API key for the AI agent feature.
+   */
+  openaiApiKey?: string;
 }

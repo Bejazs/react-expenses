@@ -25,7 +25,7 @@ export const CategoryIcon: React.FC<CategoryIconProps> = ({ icon, size = 24, col
         source={{ uri: icon }}
         style={[
           { width: size, height: size, borderRadius: size / 2 },
-          style,
+          style as any,
         ]}
         resizeMode="cover"
       />

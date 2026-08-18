@@ -6,6 +6,7 @@ import { Category } from '../models/Category';
 import { Expense } from '../models/Expense';
 import { formatDateEuropean } from '../utils/dateUtils';
 import { CategoryIcon } from './CategoryIcon';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Props for the ExpenseModal component.
@@ -40,6 +41,7 @@ interface ExpenseModalProps {
  * It provides input fields for description, amount, date, and category selection.
  */
 const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, initialExpense, categories }) => {
+  const { t } = useTranslation();
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date());
@@ -80,8 +82,16 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
    */
   const handleSave = () => {
     const numericAmount = parseFloat(amount);
-    if (!description || isNaN(numericAmount) || !selectedCategoryId) {
-      Alert.alert('Error', 'Please fill all fields correctly.');
+    if (!description) {
+      Alert.alert('Error', t('expenseModal.errorDescription'));
+      return;
+    }
+    if (isNaN(numericAmount)) {
+      Alert.alert('Error', t('expenseModal.errorAmount'));
+      return;
+    }
+    if (!selectedCategoryId) {
+      Alert.alert('Error', t('expenseModal.errorCategory'));
       return;
     }
 
@@ -99,17 +109,17 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
     <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          <Text style={styles.modalTitle}>{initialExpense ? 'Edit Expense' : 'Add Expense'}</Text>
+          <Text style={styles.modalTitle}>{initialExpense ? t('expenseModal.editExpense') : t('expenseModal.addExpense')}</Text>
 
           <TextInput
             style={styles.input}
-            placeholder="Description"
+            placeholder={t('expenseModal.description')}
             value={description}
             onChangeText={setDescription}
           />
           <TextInput
             style={styles.input}
-            placeholder="Amount"
+            placeholder={t('expenseModal.amount')}
             value={amount}
             onChangeText={setAmount}
             keyboardType="numeric"
@@ -146,7 +156,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
             </Modal>
           )}
 
-          <Text style={styles.label}>Select Category:</Text>
+          <Text style={styles.label}>{t('expenseModal.category')}:</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categorySelector}>
             {categories.map((category) => (
               <TouchableOpacity
@@ -167,8 +177,8 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
           </ScrollView>
 
           <View style={styles.buttonContainer}>
-            <Button title="Cancel" onPress={onClose} color="red" />
-            <Button title="Save" onPress={handleSave} />
+            <Button title={t('expenseModal.cancel')} onPress={onClose} color="red" />
+            <Button title={t('expenseModal.save')} onPress={handleSave} />
           </View>
         </View>
       </View>

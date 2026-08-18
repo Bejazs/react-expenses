@@ -8,6 +8,8 @@ This is a simple mobile application for tracking personal expenses. It allows us
 - View a list of all recorded expenses.
 - Data persistence using local file storage.
 - Loading indicator while fetching data.
+- **Multi-language support:** Switch between English and Portuguese seamlessly.
+- **AI Agent Integration:** Import bank statements (PDF or CSV) directly into the app. The AI automatically categorizes and adds your expenses based on your available categories. (Requires an OpenAI API Key).
 
 ## Tech Stack
 
@@ -71,6 +73,13 @@ This is a simple mobile application for tracking personal expenses. It allows us
 - If you encounter connection issues, ensure your phone and computer are on the same Wi-Fi network.
 - You can also try running `npx expo start --tunnel` if you have network restrictions.
 
+## New AI Feature Setup
+
+1. Open the App and navigate to the **Settings** tab.
+2. Under **AI Agent**, enter your **OpenAI API Key** and hit Save.
+3. Navigate to the **Expenses** tab and click on the "Import Statement" button.
+4. Select a PDF or CSV file. The AI will parse the file and automatically categorize and add the expenses!
+
 ## Code Overview
 
 The codebase is organized into the following directories:
@@ -79,6 +88,8 @@ The codebase is organized into the following directories:
 - **`src/services`**: Handles data persistence and retrieval (e.g., `ExpenseService.ts`).
 - **`src/viewmodels`**: Manages the application's state and business logic (e.g., `ExpenseViewModel.ts`).
 - **`src/views`**: Contains the UI components and screens (e.g., `ExpenseScreen.tsx`).
+- **`src/i18n`**: Contains the localization files.
+- **`src/services/ai`**: Contains the OpenAI agent integration and file parsing logic.
 
 ## Contributing
 
