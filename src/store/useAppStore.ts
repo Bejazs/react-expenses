@@ -74,15 +74,21 @@ export const useAppStore = create<AppState>()((set, get) => {
     loaded: false,
 
     load: async () => {
-      await runMigrations();
-      const settings = await getSettings();
-      await syncAutoIncomes();
-      const [expenses, categories, incomes] = await Promise.all([
-        getExpenses(),
-        getCategories(),
-        getIncomes(),
-      ]);
-      set({ settings, expenses, categories, incomes, loaded: true });
+      try {
+        await runMigrations();
+        const settings = await getSettings();
+        await syncAutoIncomes();
+        const [expenses, categories, incomes] = await Promise.all([
+          getExpenses(),
+          getCategories(),
+          getIncomes(),
+        ]);
+        set({ settings, expenses, categories, incomes });
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        set({ loaded: true });
+      }
     },
 
     addExpense: async expense => {

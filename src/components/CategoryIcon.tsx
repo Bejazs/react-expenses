@@ -1,6 +1,7 @@
 import React from 'react';
 import { Image, StyleSheet, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../theme';
 
 interface CategoryIconProps {
   icon: string;
@@ -13,7 +14,8 @@ interface CategoryIconProps {
  * Component to display a category icon.
  * It can render either a vector icon (Ionicons) or a custom image (URI).
  */
-export const CategoryIcon: React.FC<CategoryIconProps> = ({ icon, size = 24, color = 'black', style }) => {
+export const CategoryIcon: React.FC<CategoryIconProps> = ({ icon, size = 24, color, style }) => {
+  const theme = useTheme();
   if (!icon) return null;
 
   // detailed check for URI schemes commonly used in React Native
@@ -36,7 +38,7 @@ export const CategoryIcon: React.FC<CategoryIconProps> = ({ icon, size = 24, col
     <Ionicons
       name={icon as any}
       size={size}
-      color={color}
+      color={color ?? theme.colors.onCategory}
       style={style}
     />
   );

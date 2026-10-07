@@ -39,4 +39,9 @@ export interface Settings {
    * 'salary' calculates from payday to next payday.
    */
   calculationCycle?: 'calendar' | 'salary';
+
+  /**
+   * Color scheme preference: follow the system, or force light or dark.
+   */
+  appearance?: 'system' | 'light' | 'dark';
 }

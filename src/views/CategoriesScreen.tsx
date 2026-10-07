@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, Image, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { useCategoryViewModel } from '../viewmodels/CategoryViewModel';
@@ -8,9 +8,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { saveCustomIcon } from '../services/ImageService';
 import { ICON_NAMES } from '../utils/iconUtils';
 import { useTranslation } from 'react-i18next';
-
-// Available colors for selection
-const COLORS = ['#FF6347', '#4682B4', '#9370DB', '#20B2AA', '#808080', '#FFA500', '#FF4500', '#32CD32'];
+import { CATEGORY_COLORS, Theme, useTheme, useThemedStyles } from '../theme';
+import { Button, createFormStyles, IconButton } from '../components/ui';
 
 /**
  * Screen for managing categories.
@@ -18,10 +17,12 @@ const COLORS = ['#FF6347', '#4682B4', '#9370DB', '#20B2AA', '#808080', '#FFA500'
  */
 const CategoriesScreen = () => {
   const { t } = useTranslation();
-  const { categories, loading, addCategory, deleteCategory } = useCategoryViewModel();
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
+  const { categories, addCategory, deleteCategory } = useCategoryViewModel();
   const [name, setName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('help-circle'); // Default icon
-  const [selectedColor, setSelectedColor] = useState(COLORS[0]);
+  const [selectedColor, setSelectedColor] = useState(CATEGORY_COLORS[0]);
 
   const [iconModalVisible, setIconModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,7 +41,7 @@ const CategoriesScreen = () => {
       addCategory(name, selectedIcon, selectedColor);
       setName('');
       setSelectedIcon('help-circle');
-      setSelectedColor(COLORS[0]);
+      setSelectedColor(CATEGORY_COLORS[0]);
       setIsFormExpanded(false);
     } else {
       Alert.alert('Error', t('categoryModal.errorName'));
@@ -53,20 +54,15 @@ const CategoriesScreen = () => {
    */
   const handleDeleteCategory = (id: string) => {
     if (Platform.OS === 'web') {
-      // @ts-ignore
-      if (window.confirm('Are you sure you want to delete this category?')) {
+      if ((globalThis as { confirm?: (message: string) => boolean }).confirm?.(t('common.confirmDelete'))) {
         deleteCategory(id);
       }
-    } else {
-      Alert.alert(
-        'Delete',
-        'Are you sure?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Delete', style: 'destructive', onPress: () => deleteCategory(id) },
-        ]
-      );
+      return;
     }
+    Alert.alert(t('common.delete'), t('common.confirmDelete'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: () => deleteCategory(id) },
+    ]);
   };
 
   /**
@@ -88,7 +84,7 @@ const CategoriesScreen = () => {
       }
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'Failed to pick image');
+      Alert.alert('Error', t('categoryModal.errorImage'));
     }
   };
 
@@ -98,74 +94,88 @@ const CategoriesScreen = () => {
   const renderItem = ({ item }: { item: Category }) => (
     <View style={styles.categoryItem}>
       <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
-        <CategoryIcon icon={item.icon} size={24} color="white" />
+        <CategoryIcon icon={item.icon} size={24} color={theme.colors.onCategory} />
       </View>
       <Text style={styles.categoryName}>{item.name}</Text>
-      <TouchableOpacity onPress={() => handleDeleteCategory(item.id)}>
-        <Ionicons name="trash-outline" size={22} color="#ef4444" />
-      </TouchableOpacity>
+      <IconButton
+        icon="trash-outline"
+        color={theme.colors.danger}
+        accessibilityLabel={t('common.deleteItem', { name: item.name })}
+        onPress={() => handleDeleteCategory(item.id)}
+      />
     </View>
   );
 
   const renderIconItem = ({ item }: { item: string }) => (
     <TouchableOpacity
       style={styles.iconGridItem}
+      accessibilityRole="button"
+      accessibilityLabel={item}
       onPress={() => {
         setSelectedIcon(item);
         setIconModalVisible(false);
       }}
     >
-      <Ionicons name={item as any} size={32} color="black" />
+      <Ionicons name={item as any} size={32} color={theme.colors.text} />
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('categories.title')}</Text>
+      <Text accessibilityRole="header" style={styles.title}>{t('categories.title')}</Text>
 
       <View style={styles.form}>
-        <TouchableOpacity style={styles.formHeader} onPress={() => setIsFormExpanded(!isFormExpanded)} activeOpacity={0.7}>
+        <TouchableOpacity
+          style={styles.formHeader}
+          onPress={() => setIsFormExpanded(!isFormExpanded)}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: isFormExpanded }}
+        >
           <Text style={styles.formTitle}>{t('categories.addCategory')}</Text>
-          <Ionicons name={isFormExpanded ? 'chevron-up' : 'chevron-down'} size={24} color="#333" />
+          <Ionicons name={isFormExpanded ? 'chevron-up' : 'chevron-down'} size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        
+
         {isFormExpanded && (
           <View style={styles.formContent}>
             <TextInput
               style={styles.input}
               placeholder={t('categoryModal.name')}
+              placeholderTextColor={theme.colors.muted}
               value={name}
               onChangeText={setName}
             />
 
-            <Text style={styles.label}>Icon:</Text>
+            <Text style={styles.label}>{t('categoryModal.icon')}</Text>
             <View style={styles.iconSelectionRow}>
                 <View style={[styles.selectedIconPreview, { backgroundColor: selectedColor }]}>
-                    <CategoryIcon icon={selectedIcon} size={30} color="white" />
+                    <CategoryIcon icon={selectedIcon} size={30} color={theme.colors.onCategory} />
                 </View>
-                <TouchableOpacity style={styles.secondaryButton} onPress={() => setIconModalVisible(true)}>
-                    <Text style={styles.secondaryButtonText}>{t('categoryModal.selectIcon')}</Text>
-                </TouchableOpacity>
+                <Button label={t('categoryModal.selectIcon')} variant="secondary" onPress={() => setIconModalVisible(true)} />
             </View>
 
-            <Text style={styles.label}>{t('categoryModal.color')}:</Text>
+            <Text style={styles.label}>{t('categoryModal.color')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.selector}>
-              {COLORS.map((color) => (
-                <TouchableOpacity
-                  key={color}
-                  style={[
-                    styles.colorOption,
-                    { backgroundColor: color },
-                    selectedColor === color && styles.selectedColorOption,
-                  ]}
-                  onPress={() => setSelectedColor(color)}
-                />
-              ))}
+              {CATEGORY_COLORS.map((color, index) => {
+                const selected = selectedColor === color;
+                return (
+                  <TouchableOpacity
+                    key={color}
+                    style={styles.colorTouch}
+                    onPress={() => setSelectedColor(color)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected }}
+                    accessibilityLabel={t('categoryModal.colorOption', { index: index + 1 })}
+                  >
+                    <View style={[styles.colorOption, { backgroundColor: color }, selected && styles.selectedColorOption]}>
+                      {selected && <Ionicons name="checkmark" size={18} color={theme.colors.onCategory} />}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
 
-            <TouchableOpacity style={styles.primaryButton} onPress={handleAddCategory}>
-                <Text style={styles.primaryButtonText}>{t('categories.addCategory')}</Text>
-            </TouchableOpacity>
+            <Button label={t('categories.addCategory')} onPress={handleAddCategory} style={{ marginTop: theme.spacing.sm }} />
           </View>
         )}
       </View>
@@ -184,22 +194,21 @@ const CategoriesScreen = () => {
       >
           <View style={styles.modalContainer}>
               <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>{t('categoryModal.selectIcon')}</Text>
-                  <TouchableOpacity onPress={() => setIconModalVisible(false)}>
-                      <Ionicons name="close" size={28} color="black" />
-                  </TouchableOpacity>
+                  <Text style={styles.modalTitleLeft}>{t('categoryModal.selectIcon')}</Text>
+                  <IconButton icon="close" size={28} accessibilityLabel={t('categoryModal.close')} onPress={() => setIconModalVisible(false)} />
               </View>
 
               <View style={styles.modalActions}>
-                  <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-                      <Ionicons name="images" size={20} color="white" />
+                  <TouchableOpacity style={styles.uploadButton} onPress={pickImage} accessibilityRole="button">
+                      <Ionicons name="images" size={20} color={theme.colors.onAccent} />
                       <Text style={styles.uploadButtonText}>{t('categoryModal.uploadImage')}</Text>
                   </TouchableOpacity>
               </View>
 
               <TextInput
-                  style={styles.searchInput}
-                  placeholder="Search icons..."
+                  style={[styles.input, styles.searchInput]}
+                  placeholder={t('categoryModal.searchIcons')}
+                  placeholderTextColor={theme.colors.muted}
                   value={searchQuery}
                   onChangeText={setSearchQuery}
               />
@@ -220,197 +229,155 @@ const CategoriesScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#f8fafc',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#1e293b',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  form: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    marginBottom: 20,
-    elevation: 3,
-    overflow: 'hidden',
-  },
-  formHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 15,
-  },
-  formTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  formContent: {
-    padding: 15,
-    paddingTop: 0,
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  searchInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-    marginHorizontal: 10,
-  },
-  label: {
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  selector: {
-    marginBottom: 10,
-  },
-  colorOption: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    marginRight: 10,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  selectedColorOption: {
-    borderColor: 'black',
-  },
-  listContent: {
-    paddingBottom: 20,
-  },
-  categoryItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 18,
-    borderRadius: 16,
-    marginBottom: 12,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  categoryName: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1e293b',
-  },
-  iconSelectionRow: {
+const createStyles = (theme: Theme) => ({
+  ...createFormStyles(theme),
+  ...StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: theme.spacing.screen,
+      paddingTop: theme.spacing.screen + theme.spacing.sm,
+      backgroundColor: theme.colors.bg,
+    },
+    title: {
+      ...theme.typography.title,
+      color: theme.colors.text,
+      marginBottom: theme.spacing.lg,
+    },
+    form: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radii.card,
+      marginBottom: theme.spacing.lg,
+      overflow: 'hidden',
+    },
+    formHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: theme.spacing.lg,
+      minHeight: theme.minTouch,
+    },
+    formTitle: {
+      ...theme.typography.bodyStrong,
+      color: theme.colors.text,
+    },
+    formContent: {
+      padding: theme.spacing.lg,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.border,
+    },
+    searchInput: {
+      marginHorizontal: theme.spacing.screen,
+    },
+    selector: {
+      marginBottom: theme.spacing.sm,
+    },
+    colorTouch: {
+      width: theme.minTouch,
+      height: theme.minTouch,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: theme.spacing.xs,
+    },
+    colorOption: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      borderWidth: 3,
+      borderColor: 'transparent',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    selectedColorOption: {
+      borderColor: theme.colors.text,
+    },
+    listContent: {
+      paddingBottom: theme.spacing.xxl * 2,
+    },
+    categoryItem: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: 10,
-  },
-  selectedIconPreview: {
+      backgroundColor: theme.colors.surface,
+      paddingVertical: theme.spacing.md,
+      paddingLeft: theme.spacing.lg,
+      paddingRight: theme.spacing.sm,
+      borderRadius: theme.radii.inner,
+      marginBottom: theme.spacing.md,
+    },
+    iconContainer: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: theme.spacing.md,
+    },
+    categoryName: {
+      ...theme.typography.bodyStrong,
+      flex: 1,
+      color: theme.colors.text,
+    },
+    iconSelectionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: theme.spacing.md,
+      gap: theme.spacing.md,
+    },
+    selectedIconPreview: {
       width: 50,
       height: 50,
       borderRadius: 25,
       justifyContent: 'center',
       alignItems: 'center',
-      marginRight: 15,
-  },
-  modalContainer: {
+    },
+    modalContainer: {
       flex: 1,
-      backgroundColor: 'white',
+      backgroundColor: theme.colors.bg,
       paddingTop: 50,
-  },
-  modalHeader: {
+    },
+    modalHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingHorizontal: 20,
-      marginBottom: 20,
-  },
-  modalTitle: {
-      fontSize: 22,
-      fontWeight: 'bold',
-  },
-  modalActions: {
-      paddingHorizontal: 20,
-      marginBottom: 10,
-  },
-  uploadButton: {
+      paddingHorizontal: theme.spacing.screen,
+      marginBottom: theme.spacing.lg,
+    },
+    modalTitleLeft: {
+      ...theme.typography.heading,
+      color: theme.colors.text,
+    },
+    modalActions: {
+      paddingHorizontal: theme.spacing.screen,
+      marginBottom: theme.spacing.md,
+    },
+    uploadButton: {
       flexDirection: 'row',
-      backgroundColor: '#6366f1',
-      padding: 14,
-      borderRadius: 12,
+      backgroundColor: theme.colors.accent,
+      minHeight: theme.minTouch,
+      borderRadius: theme.radii.pill,
       justifyContent: 'center',
       alignItems: 'center',
-      elevation: 4,
-      shadowColor: '#6366f1',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 6,
-  },
-  uploadButtonText: {
-      color: 'white',
-      marginLeft: 10,
-      fontWeight: 'bold',
-  },
-  iconGrid: {
-      paddingHorizontal: 10,
-      paddingBottom: 20,
-  },
-  iconGridItem: {
+    },
+    uploadButtonText: {
+      ...theme.typography.bodyStrong,
+      color: theme.colors.onAccent,
+      marginLeft: theme.spacing.sm,
+    },
+    iconGrid: {
+      paddingHorizontal: theme.spacing.md,
+      paddingBottom: theme.spacing.xl,
+    },
+    iconGridItem: {
       flex: 1,
       alignItems: 'center',
-      padding: 10,
-      margin: 5,
+      justifyContent: 'center',
+      minHeight: theme.minTouch + theme.spacing.md,
+      margin: theme.spacing.xs,
       borderWidth: 1,
-      borderColor: '#eee',
-      borderRadius: 5,
-  },
-  primaryButton: {
-    backgroundColor: '#6366f1',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: '#6366f1',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
-    marginTop: 15,
-  },
-  primaryButtonText: {
-    color: 'white',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  secondaryButton: {
-    backgroundColor: '#f1f5f9',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  secondaryButtonText: {
-    color: '#64748b',
-    fontWeight: '600',
-  }
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radii.input,
+    },
+  }),
 });
 
 export default CategoriesScreen;

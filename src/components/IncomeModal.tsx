@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, Modal, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, TextInput, Modal, TouchableOpacity, Platform, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Income } from '../models/Income';
 import { formatDateEuropean } from '../utils/dateUtils';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme, useThemedStyles } from '../theme';
+import { Button, createFormStyles } from './ui';
 
 interface IncomeModalProps {
   visible: boolean;
@@ -15,6 +17,8 @@ interface IncomeModalProps {
 
 const IncomeModal: React.FC<IncomeModalProps> = ({ visible, onClose, onSave, initialIncome }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = useThemedStyles(createFormStyles);
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date());
@@ -43,9 +47,13 @@ const IncomeModal: React.FC<IncomeModalProps> = ({ visible, onClose, onSave, ini
   };
 
   const handleSave = () => {
-    const numericAmount = parseFloat(amount);
-    if (!description || isNaN(numericAmount)) {
-      // Basic validation
+    const numericAmount = parseFloat(amount.replace(',', '.'));
+    if (!description) {
+      Alert.alert('Error', t('expenseModal.errorDescription'));
+      return;
+    }
+    if (isNaN(numericAmount)) {
+      Alert.alert('Error', t('expenseModal.errorAmount'));
       return;
     }
 
@@ -67,21 +75,23 @@ const IncomeModal: React.FC<IncomeModalProps> = ({ visible, onClose, onSave, ini
           <TextInput
             style={styles.input}
             placeholder={t('incomeModal.description')}
+            placeholderTextColor={theme.colors.muted}
             value={description}
             onChangeText={setDescription}
           />
           <TextInput
             style={styles.input}
             placeholder={t('incomeModal.amount')}
+            placeholderTextColor={theme.colors.muted}
             value={amount}
             onChangeText={setAmount}
-            keyboardType="numeric"
+            keyboardType="decimal-pad"
           />
 
-          <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-               <Ionicons name="calendar-outline" size={20} color="gray" style={{marginRight: 10}} />
-               <Text>{formatDateEuropean(date)}</Text>
+          <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input} accessibilityRole="button">
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+               <Ionicons name="calendar-outline" size={20} color={theme.colors.muted} style={{ marginRight: theme.spacing.sm }} />
+               <Text style={styles.inputText}>{formatDateEuropean(date)}</Text>
             </View>
           </TouchableOpacity>
 
@@ -104,110 +114,23 @@ const IncomeModal: React.FC<IncomeModalProps> = ({ visible, onClose, onSave, ini
                         value={date}
                         mode="date"
                         display="spinner"
+                        themeVariant={theme.scheme}
                         onChange={onChangeDate}
                      />
-                     <TouchableOpacity style={styles.doneButton} onPress={() => setShowDatePicker(false)}>
-                         <Text style={styles.doneButtonText}>Done</Text>
-                     </TouchableOpacity>
+                     <Button label="OK" onPress={() => setShowDatePicker(false)} style={{ marginTop: theme.spacing.lg }} />
                   </View>
                </View>
             </Modal>
           )}
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-                <Text style={styles.cancelButtonText}>{t('incomeModal.cancel')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.saveButtonText}>{t('incomeModal.save')}</Text>
-            </TouchableOpacity>
+            <Button label={t('incomeModal.cancel')} variant="secondary" onPress={onClose} style={styles.button} />
+            <Button label={t('incomeModal.save')} onPress={handleSave} style={styles.button} />
           </View>
         </View>
       </View>
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  modalView: {
-    width: '90%',
-    backgroundColor: 'white',
-    borderRadius: 24,
-    padding: 24,
-    alignItems: 'stretch',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 8,
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#1e293b',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 15,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: 14,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 12,
-    marginRight: 10,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: '#64748b',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  saveButton: {
-    flex: 1,
-    paddingVertical: 14,
-    backgroundColor: '#10b981',
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: '#10b981',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  saveButtonText: {
-    color: 'white',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  doneButton: {
-    marginTop: 15,
-    paddingVertical: 10,
-    backgroundColor: '#6366f1',
-    borderRadius: 8,
-    alignItems: 'center'
-  },
-  doneButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16
-  }
-});
 
 export default IncomeModal;

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, RefreshControl } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, RefreshControl, Platform, ActivityIndicator } from 'react-native';
 import { useExpenseViewModel } from '../viewmodels/ExpenseViewModel';
 import { useCategoryViewModel } from '../viewmodels/CategoryViewModel';
 import { useSettingsViewModel } from '../viewmodels/SettingsViewModel';
 import { Expense } from '../models/Expense';
 import { formatDate } from '../utils/dateUtils';
 import { Ionicons } from '@expo/vector-icons';
+import { Theme, useTheme, useThemedStyles } from '../theme';
+import { MoneyText } from '../components/ui';
 import { CategoryIcon } from '../components/CategoryIcon';
 import ExpenseModal from '../components/ExpenseModal';
 import { useTranslation } from 'react-i18next';
@@ -19,9 +21,11 @@ import { validateImportedExpenses } from '../utils/importValidation';
  */
 const ExpensesListScreen = () => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { expenses, deleteExpense, updateExpense, loadExpenses, addExpenses } = useExpenseViewModel();
   const { categories } = useCategoryViewModel();
-  const { currency, aiApiKey, aiProvider } = useSettingsViewModel();
+  const { aiApiKey, aiProvider } = useSettingsViewModel();
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = async () => {
@@ -32,8 +36,6 @@ const ExpensesListScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | undefined>(undefined);
   const [isImporting, setIsImporting] = useState(false);
-
-  const currencySymbol = currency === 'EUR' ? '€' : '$';
 
   /**
    * Opens the modal to edit the selected expense.
@@ -65,16 +67,14 @@ const ExpensesListScreen = () => {
    * @param id The ID of the expense to delete.
    */
   const confirmDeleteExpense = (id: string) => {
-    // Add translations for alert in the future if needed, but simple english for now is fine since user asked for standard texts. Actually, I should translate this too.
-    // I will add alert translations directly or leave it English for the alert if not in dict.
-    Alert.alert(
-      "Delete",
-      "Are you sure?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Delete", style: "destructive", onPress: () => deleteExpense(id) }
-      ]
-    );
+    if (Platform.OS === 'web') {
+      if ((globalThis as { confirm?: (message: string) => boolean }).confirm?.(t('common.confirmDelete'))) deleteExpense(id);
+      return;
+    }
+    Alert.alert(t('common.delete'), t('common.confirmDelete'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: () => deleteExpense(id) },
+    ]);
   };
 
   const handleImportAI = async () => {
@@ -118,22 +118,27 @@ const ExpensesListScreen = () => {
   const renderItem = ({ item }: { item: Expense }) => {
     const category = categories.find(c => c.id === item.categoryId);
     const dateStr = formatDate(item.date);
+    const categoryName = category?.name || t('common.uncategorized');
 
     return (
       <TouchableOpacity
         style={styles.expenseItem}
         onPress={() => handleEditExpense(item)}
         onLongPress={() => confirmDeleteExpense(item.id)}
+        accessibilityRole="button"
+        accessibilityLabel={t('common.editItem', { name: item.description })}
+        accessibilityActions={[{ name: 'delete', label: t('common.deleteItem', { name: item.description }) }]}
+        onAccessibilityAction={e => e.nativeEvent.actionName === 'delete' && confirmDeleteExpense(item.id)}
       >
-        <View style={[styles.iconContainer, { backgroundColor: category?.color || '#cbd5e1' }]}>
-            <CategoryIcon icon={category?.icon || 'help'} size={24} color="white" />
+        <View style={[styles.iconContainer, { backgroundColor: category?.color || theme.colors.estimate }]}>
+            <CategoryIcon icon={category?.icon || 'help'} size={24} color={theme.colors.onCategory} />
         </View>
         <View style={styles.details}>
             <Text style={styles.description}>{item.description}</Text>
-            <Text style={styles.categoryName}>{category?.name || 'Uncategorized'} • {dateStr}</Text>
+            <Text style={styles.categoryName}>{categoryName} • {dateStr}</Text>
         </View>
-        <Text style={[styles.amount, { color: '#ef4444' }]}>-{currencySymbol}{item.amount.toFixed(2)}</Text>
-        <Ionicons name="chevron-forward" size={20} color="#9ca3af" style={{ marginLeft: 10 }} />
+        <MoneyText value={item.amount} negative size="small" color={theme.colors.danger} />
+        <Ionicons name="chevron-forward" size={20} color={theme.colors.muted} style={{ marginLeft: theme.spacing.sm }} />
       </TouchableOpacity>
     );
   };
@@ -141,12 +146,19 @@ const ExpensesListScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
+        <Text accessibilityRole="header" style={styles.title}>{t('expenses.title')}</Text>
         <TouchableOpacity
           style={[styles.importButton, isImporting && styles.importButtonDisabled]}
           onPress={handleImportAI}
           disabled={isImporting}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: isImporting, busy: isImporting }}
         >
-          <Ionicons name="document-text-outline" size={20} color="white" />
+          {isImporting ? (
+            <ActivityIndicator size="small" color={theme.colors.onAccent} />
+          ) : (
+            <Ionicons name="document-text-outline" size={20} color={theme.colors.onAccent} />
+          )}
           <Text style={styles.importButtonText}>{isImporting ? t('ai.importing') : t('expenses.importStatement')}</Text>
         </TouchableOpacity>
       </View>
@@ -156,7 +168,7 @@ const ExpensesListScreen = () => {
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={theme.colors.accent} />}
         ListEmptyComponent={<Text style={styles.emptyText}>{t('expenses.noExpenses')}</Text>}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
@@ -174,89 +186,89 @@ const ExpensesListScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  headerRow: {
-    padding: 15,
-    paddingBottom: 0,
-    alignItems: 'flex-end',
-  },
-  importButton: {
-    flexDirection: 'row',
-    backgroundColor: '#6366f1',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 24,
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#6366f1',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-  },
-  importButtonDisabled: {
-    backgroundColor: '#a5b4fc',
-  },
-  importButtonText: {
-    color: 'white',
-    fontWeight: '700',
-    marginLeft: 8,
-  },
-  listContent: {
-    padding: 20,
-    paddingBottom: 80,
-  },
-  expenseItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 18,
-    borderRadius: 16,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  details: {
-    flex: 1,
-  },
-  description: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 4,
-  },
-  categoryName: {
-    fontSize: 13,
-    color: '#64748b',
-    fontWeight: '500',
-  },
-  amount: {
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 60,
-    fontSize: 16,
-    color: '#9ca3af',
-    fontWeight: '500',
-  },
-  separator: {
-    height: 12,
-  }
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.bg,
+    },
+    headerRow: {
+      paddingHorizontal: theme.spacing.screen,
+      paddingTop: theme.spacing.screen + theme.spacing.sm,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: theme.spacing.md,
+      width: '100%',
+      maxWidth: 720,
+      alignSelf: 'center',
+    },
+    title: {
+      ...theme.typography.title,
+      color: theme.colors.text,
+    },
+    importButton: {
+      flexDirection: 'row',
+      backgroundColor: theme.colors.accent,
+      paddingHorizontal: theme.spacing.lg,
+      minHeight: theme.minTouch,
+      borderRadius: theme.radii.pill,
+      alignItems: 'center',
+    },
+    importButtonDisabled: {
+      opacity: 0.7,
+    },
+    importButtonText: {
+      ...theme.typography.label,
+      color: theme.colors.onAccent,
+      marginLeft: theme.spacing.sm,
+    },
+    listContent: {
+      padding: theme.spacing.screen,
+      paddingBottom: theme.spacing.xxl * 2,
+      width: '100%',
+      maxWidth: 720,
+      alignSelf: 'center',
+    },
+    expenseItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      padding: theme.spacing.lg,
+      borderRadius: theme.radii.inner,
+      minHeight: theme.minTouch,
+    },
+    iconContainer: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: theme.spacing.md,
+    },
+    details: {
+      flex: 1,
+      marginRight: theme.spacing.sm,
+    },
+    description: {
+      ...theme.typography.bodyStrong,
+      color: theme.colors.text,
+      marginBottom: 2,
+    },
+    categoryName: {
+      ...theme.typography.caption,
+      color: theme.colors.muted,
+    },
+    emptyText: {
+      ...theme.typography.body,
+      textAlign: 'center',
+      marginTop: 60,
+      color: theme.colors.muted,
+    },
+    separator: {
+      height: theme.spacing.md,
+    },
+  });
 
 export default ExpensesListScreen;

@@ -1,4 +1,4 @@
-import { Currency } from '../models/Settings';
+import { Currency, Settings } from '../models/Settings';
 import { useAppStore } from '../store/useAppStore';
 
 /**
@@ -14,6 +14,11 @@ export const useSettingsViewModel = () => {
    * Updates the currency setting.
    */
   const setCurrency = (currency: Currency) => updateSettings({ currency });
+
+  /**
+   * Updates the color scheme preference.
+   */
+  const setAppearance = (appearance: NonNullable<Settings['appearance']>) => updateSettings({ appearance });
 
   /**
    * Updates the AI settings.
@@ -37,8 +42,10 @@ export const useSettingsViewModel = () => {
     baseSalary: settings.baseSalary,
     payday: settings.payday,
     calculationCycle: settings.calculationCycle || 'calendar',
+    appearance: settings.appearance || 'system',
     loading: !loaded,
     setCurrency,
+    setAppearance,
     updateAISettings,
     updateSalarySettings,
     loadSettings: load,
