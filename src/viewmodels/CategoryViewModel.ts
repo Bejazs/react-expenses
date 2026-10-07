@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Category } from '../models/Category';
+import { generateId } from '../utils/id';
 import { getCategories, saveCategories } from '../services/ExpenseService';
 
 /**
@@ -42,7 +43,7 @@ export const useCategoryViewModel = () => {
    */
   const addCategory = async (name: string, icon: string, color: string) => {
     const newCategory: Category = {
-      id: Date.now().toString(),
+      id: generateId(),
       name,
       icon,
       color,

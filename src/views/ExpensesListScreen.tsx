@@ -12,6 +12,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { pickAndReadFile } from '../services/ai/FileParserService';
 import { analyzeStatement } from '../services/ai/AIAgentService';
+import { validateImportedExpenses } from '../utils/importValidation';
 
 /**
  * Screen for displaying the list of expenses.
@@ -19,7 +20,7 @@ import { analyzeStatement } from '../services/ai/AIAgentService';
  */
 const ExpensesListScreen = () => {
   const { t } = useTranslation();
-  const { expenses, loading, deleteExpense, updateExpense, loadExpenses, addExpense } = useExpenseViewModel();
+  const { expenses, loading, deleteExpense, updateExpense, loadExpenses, addExpenses } = useExpenseViewModel();
   const { categories, loadCategories } = useCategoryViewModel();
   const { currency, aiApiKey, aiProvider, loadSettings } = useSettingsViewModel();
   const [modalVisible, setModalVisible] = useState(false);
@@ -97,16 +98,15 @@ const ExpensesListScreen = () => {
 
       const parsedExpenses = await analyzeStatement(textContent, categories, aiApiKey, aiProvider);
 
-      if (parsedExpenses && parsedExpenses.length > 0) {
-        let count = 0;
-        for (const exp of parsedExpenses) {
-          await addExpense(exp.description, exp.amount, exp.date, exp.categoryId);
-          count++;
-        }
-        Alert.alert('Success', `${count} ${t('ai.expensesAdded')}`);
-        loadExpenses();
+      const { valid, skipped } = validateImportedExpenses(parsedExpenses, categories);
+
+      if (valid.length > 0) {
+        const saved = await addExpenses(valid);
+        Alert.alert(t('ai.success'), t('ai.importResult', { imported: saved, skipped }));
+      } else if (skipped > 0) {
+        Alert.alert('Info', t('ai.importResult', { imported: 0, skipped }));
       } else {
-        Alert.alert('Info', 'No expenses found in the statement.');
+        Alert.alert('Info', t('ai.noExpensesFound'));
       }
     } catch (error) {
       console.error(error);

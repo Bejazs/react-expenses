@@ -76,7 +76,9 @@
     "errorParsing": "Error parsing file. Please check the format.",
     "errorApi": "Error communicating with AI. Check your API key.",
     "errorGeneral": "An error occurred during import.",
-    "expensesAdded": "expenses added."
+    "expensesAdded": "expenses added.",
+    "importResult": "{{imported}} imported, {{skipped}} skipped.",
+    "noExpensesFound": "No expenses found in the statement."
   },
   "incomeModal": {
     "addIncome": "Add Income",

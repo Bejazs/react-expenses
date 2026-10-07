@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import { Income } from '../models/Income';
+import { generateId } from '../utils/id';
 import { getSettings } from './SettingsService';
 
 const INCOMES_FILE = 'incomes.json';
@@ -86,7 +87,7 @@ export const syncAutoIncomes = async (): Promise<void> => {
     const autoIncomeDate = new Date(currentYear, currentMonth, settings.payday).toISOString();
     
     const newIncome: Income = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: generateId(),
       description: 'Salário Base',
       amount: settings.baseSalary,
       date: autoIncomeDate,

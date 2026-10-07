@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Income } from '../models/Income';
+import { generateId } from '../utils/id';
 import { getIncomes, saveIncomes, syncAutoIncomes } from '../services/IncomeService';
 
 export const useIncomeViewModel = () => {
@@ -19,7 +20,7 @@ export const useIncomeViewModel = () => {
 
   const addIncome = async (description: string, amount: number, date: string) => {
     const newIncome: Income = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: generateId(),
       description,
       amount,
       date,

@@ -76,7 +76,9 @@
     "errorParsing": "Erro ao ler o ficheiro. Verifique o formato.",
     "errorApi": "Erro ao comunicar com a AI. Verifique a sua API key.",
     "errorGeneral": "Ocorreu um erro durante a importação.",
-    "expensesAdded": "despesas adicionadas."
+    "expensesAdded": "despesas adicionadas.",
+    "importResult": "{{imported}} importadas, {{skipped}} ignoradas.",
+    "noExpensesFound": "Nenhuma despesa encontrada no extrato."
   },
   "incomeModal": {
     "addIncome": "Adicionar Rendimento",
