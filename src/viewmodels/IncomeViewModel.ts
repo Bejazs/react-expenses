@@ -1,45 +1,19 @@
-import { useState, useCallback } from 'react';
-import { Income } from '../models/Income';
-import { generateId } from '../utils/id';
-import { getIncomes, saveIncomes, syncAutoIncomes } from '../services/IncomeService';
+import { useAppStore } from '../store/useAppStore';
 
+/**
+ * Income data and actions, read from the global store.
+ */
 export const useIncomeViewModel = () => {
-  const [incomes, setIncomes] = useState<Income[]>([]);
-  const [loading, setLoading] = useState(true);
+  const incomes = useAppStore(s => s.incomes);
+  const loaded = useAppStore(s => s.loaded);
+  const load = useAppStore(s => s.load);
+  const add = useAppStore(s => s.addIncome);
+  const deleteIncome = useAppStore(s => s.deleteIncome);
 
-  const loadIncomes = useCallback(async () => {
-    setLoading(true);
-    // Sync automatically generated incomes based on settings first
-    await syncAutoIncomes();
-    
-    // Load from storage
-    const loadedIncomes = await getIncomes();
-    setIncomes(loadedIncomes);
-    setLoading(false);
-  }, []);
+  /**
+   * Adds a manual income.
+   */
+  const addIncome = (description: string, amount: number, date: string) => add({ description, amount, date });
 
-  const addIncome = async (description: string, amount: number, date: string) => {
-    const newIncome: Income = {
-      id: generateId(),
-      description,
-      amount,
-      date,
-      isAutomatic: false
-    };
-    
-    // Don't wait for sync here since it's already generated and we aren't editing settings.
-    const currentIncomes = await getIncomes();
-    const updatedIncomes = [...currentIncomes, newIncome];
-    await saveIncomes(updatedIncomes);
-    setIncomes(updatedIncomes);
-  };
-
-  const deleteIncome = async (id: string) => {
-    const currentIncomes = await getIncomes();
-    const updatedIncomes = currentIncomes.filter(i => i.id !== id);
-    await saveIncomes(updatedIncomes);
-    setIncomes(updatedIncomes);
-  };
-
-  return { incomes, loading, loadIncomes, addIncome, deleteIncome };
+  return { incomes, loading: !loaded, loadIncomes: load, addIncome, deleteIncome };
 };

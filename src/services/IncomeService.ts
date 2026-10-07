@@ -1,60 +1,19 @@
-import { Platform } from 'react-native';
-import * as FileSystem from 'expo-file-system';
 import { Income } from '../models/Income';
 import { generateId } from '../utils/id';
 import { getSettings } from './SettingsService';
+import { readJson, writeJson } from './storage/Storage';
 
-const INCOMES_FILE = 'incomes.json';
-
-let incomesFile: FileSystem.File | null = null;
-
-if (Platform.OS !== 'web') {
-  try {
-    const { File, Paths } = FileSystem;
-    incomesFile = new File(Paths.document, INCOMES_FILE);
-  } catch (e) {
-    console.warn('Failed to initialize FileSystem for incomes:', e);
-  }
-}
+const INCOMES_KEY = 'incomes';
 
 /**
  * Retrieves all incomes.
  */
-export const getIncomes = async (): Promise<Income[]> => {
-  if (Platform.OS === 'web') {
-    const data = localStorage.getItem('incomes');
-    return data ? JSON.parse(data) : [];
-  }
-
-  try {
-    if (incomesFile?.exists) {
-      const fileContent = await incomesFile.text();
-      return JSON.parse(fileContent);
-    }
-    return [];
-  } catch (error) {
-    console.error('Error reading incomes:', error);
-    return [];
-  }
-};
+export const getIncomes = (): Promise<Income[]> => readJson<Income[]>(INCOMES_KEY, []);
 
 /**
  * Saves the incomes array.
  */
-export const saveIncomes = async (incomes: Income[]): Promise<void> => {
-  if (Platform.OS === 'web') {
-    localStorage.setItem('incomes', JSON.stringify(incomes));
-    return;
-  }
-
-  try {
-    if (incomesFile) {
-      incomesFile.write(JSON.stringify(incomes, null, 2));
-    }
-  } catch (error) {
-    console.error('Error saving incomes:', error);
-  }
-};
+export const saveIncomes = (incomes: Income[]): Promise<void> => writeJson(INCOMES_KEY, incomes);
 
 /**
  * Automatically creates an income entry for the base salary if payday has arrived

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 import { useExpenseViewModel } from '../viewmodels/ExpenseViewModel';
 import { useCategoryViewModel } from '../viewmodels/CategoryViewModel';
@@ -8,7 +8,6 @@ import { formatDate } from '../utils/dateUtils';
 import { Ionicons } from '@expo/vector-icons';
 import { CategoryIcon } from '../components/CategoryIcon';
 import ExpenseModal from '../components/ExpenseModal';
-import { useIsFocused } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { pickAndReadFile } from '../services/ai/FileParserService';
 import { analyzeStatement } from '../services/ai/AIAgentService';
@@ -20,22 +19,19 @@ import { validateImportedExpenses } from '../utils/importValidation';
  */
 const ExpensesListScreen = () => {
   const { t } = useTranslation();
-  const { expenses, loading, deleteExpense, updateExpense, loadExpenses, addExpenses } = useExpenseViewModel();
-  const { categories, loadCategories } = useCategoryViewModel();
-  const { currency, aiApiKey, aiProvider, loadSettings } = useSettingsViewModel();
+  const { expenses, deleteExpense, updateExpense, loadExpenses, addExpenses } = useExpenseViewModel();
+  const { categories } = useCategoryViewModel();
+  const { currency, aiApiKey, aiProvider } = useSettingsViewModel();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadExpenses();
+    setRefreshing(false);
+  };
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | undefined>(undefined);
   const [isImporting, setIsImporting] = useState(false);
-  const isFocused = useIsFocused();
-
-  // Reload data when screen gains focus
-  useEffect(() => {
-    if (isFocused) {
-      loadExpenses();
-      loadCategories();
-      loadSettings();
-    }
-  }, [isFocused]);
 
   const currencySymbol = currency === 'EUR' ? '€' : '$';
 
@@ -160,7 +156,7 @@ const ExpensesListScreen = () => {
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={() => { loadExpenses(); loadSettings(); }} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
         ListEmptyComponent={<Text style={styles.emptyText}>{t('expenses.noExpenses')}</Text>}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
       />

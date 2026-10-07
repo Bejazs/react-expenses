@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Button, ScrollView
 import { useSettingsViewModel } from '../viewmodels/SettingsViewModel';
 import { Currency } from '../models/Settings';
 import { Ionicons } from '@expo/vector-icons';
-import { useIsFocused } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -12,8 +11,7 @@ import { useTranslation } from 'react-i18next';
  */
 const SettingsScreen = () => {
   const { t, i18n } = useTranslation();
-  const { currency, aiApiKey, aiProvider, baseSalary, payday, calculationCycle, setCurrency, updateAISettings, updateSalarySettings, loadSettings } = useSettingsViewModel();
-  const isFocused = useIsFocused();
+  const { currency, aiApiKey, aiProvider, baseSalary, payday, calculationCycle, setCurrency, updateAISettings, updateSalarySettings } = useSettingsViewModel();
   const [apiKeyInput, setApiKeyInput] = useState(aiApiKey || '');
   const [providerInput, setProviderInput] = useState(aiProvider || 'openai');
   const [salaryInput, setSalaryInput] = useState(baseSalary ? baseSalary.toString() : '');
@@ -24,12 +22,6 @@ const SettingsScreen = () => {
   const toggleSection = (section: string) => {
     setExpandedSection(prev => prev === section ? null : section);
   };
-
-  useEffect(() => {
-    if (isFocused) {
-      loadSettings();
-    }
-  }, [isFocused]);
 
   useEffect(() => {
     setApiKeyInput(aiApiKey || '');

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,11 +9,18 @@ import SettingsScreen from './src/views/SettingsScreen';
 import { StatusBar } from 'expo-status-bar';
 import './src/i18n'; // Initialize i18n
 import { useTranslation } from 'react-i18next';
+import { useAppStore } from './src/store/useAppStore';
 
 const Tab = createBottomTabNavigator();
 
 export default function App() {
   const { t } = useTranslation();
+  const load = useAppStore(s => s.load);
+
+  // Load all data once at startup; screens read it from the shared store.
+  useEffect(() => {
+    load();
+  }, [load]);
 
   return (
     <NavigationContainer>

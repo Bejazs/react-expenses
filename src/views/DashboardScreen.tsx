@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, RefreshControl } from 'react-native';
 import { PieChart, BarChart } from 'react-native-chart-kit';
 import { useExpenseViewModel } from '../viewmodels/ExpenseViewModel';
@@ -9,7 +9,6 @@ import ExpenseModal from '../components/ExpenseModal';
 import IncomeModal from '../components/IncomeModal';
 import { Ionicons } from '@expo/vector-icons';
 import { safeParseDate } from '../utils/dateUtils';
-import { useIsFocused } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -23,24 +22,19 @@ const screenWidth = Dimensions.get('window').width;
 const DashboardScreen = () => {
   const { t } = useTranslation();
   const { expenses, loadExpenses, addExpense } = useExpenseViewModel();
-  const { incomes, loadIncomes, addIncome } = useIncomeViewModel();
-  const { categories, loadCategories } = useCategoryViewModel();
-  const { currency, calculationCycle, payday, baseSalary, loadSettings } = useSettingsViewModel();
+  const { incomes, addIncome } = useIncomeViewModel();
+  const { categories } = useCategoryViewModel();
+  const { currency, calculationCycle, payday, baseSalary } = useSettingsViewModel();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadExpenses();
+    setRefreshing(false);
+  };
   const [expenseModalVisible, setExpenseModalVisible] = useState(false);
   const [incomeModalVisible, setIncomeModalVisible] = useState(false);
   const [fabExpanded, setFabExpanded] = useState(false);
-  const isFocused = useIsFocused();
-
-  // Reload data when screen is focused
-  useEffect(() => {
-    if (isFocused) {
-      loadSettings().then(() => {
-        loadIncomes();
-        loadExpenses();
-        loadCategories();
-      });
-    }
-  }, [isFocused]);
 
   const currencySymbol = currency === 'EUR' ? '€' : '$';
 
@@ -149,7 +143,7 @@ const DashboardScreen = () => {
     <View style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={() => { loadSettings().then(() => { loadIncomes(); loadExpenses(); }); }} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       >
         <Text style={styles.title}>{t('dashboard.title')}</Text>
 
