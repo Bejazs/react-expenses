@@ -1,4 +1,5 @@
-import { readJson, writeJson } from './Storage';
+import { hasKey, readJson, writeJson } from './Storage';
+import { setAiApiKey } from '../SecretsService';
 
 export const META_KEY = 'meta';
 
@@ -21,6 +22,20 @@ export const MIGRATIONS: Migration[] = [
     version: 1,
     description: 'Estado inicial: despesas, categorias, rendimentos e definições sem alterações.',
     migrate: async () => {},
+  },
+  {
+    version: 2,
+    description: 'Move a chave de API da IA das definições para o armazenamento seguro.',
+    migrate: async () => {
+      if (!(await hasKey('settings'))) return;
+      const settings = await readJson<Record<string, unknown>>('settings', {});
+      if (!('aiApiKey' in settings)) return;
+      const { aiApiKey, ...rest } = settings;
+      if (typeof aiApiKey === 'string' && aiApiKey.trim()) {
+        await setAiApiKey(aiApiKey);
+      }
+      await writeJson('settings', rest);
+    },
   },
 ];
 

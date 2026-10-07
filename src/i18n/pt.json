@@ -51,7 +51,11 @@
     "appearanceDark": "Escuro",
     "aiProvider": "Fornecedor de IA",
     "salaryPlaceholder": "ex.: 1500",
-    "paydayPlaceholder": "ex.: 25"
+    "paydayPlaceholder": "ex.: 25",
+    "apiKeySaved": "Chave guardada: {{key}}",
+    "apiKeyNew": "Nova chave (opcional)",
+    "removeKey": "Remover chave",
+    "apiKeyWebWarning": "Por segurança, na versão web a chave só fica guardada até fechar o separador."
   },
   "expenseModal": {
     "addExpense": "Adicionar Despesa",

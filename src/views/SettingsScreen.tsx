@@ -62,8 +62,8 @@ const SettingsScreen = () => {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
-  const { currency, aiApiKey, aiProvider, baseSalary, payday, calculationCycle, appearance, setCurrency, setAppearance, updateAISettings, updateSalarySettings } = useSettingsViewModel();
-  const [apiKeyInput, setApiKeyInput] = useState(aiApiKey || '');
+  const { currency, aiApiKey, maskedAiApiKey, aiApiKeyPersists, aiProvider, baseSalary, payday, calculationCycle, appearance, setCurrency, setAppearance, updateAISettings, removeAiApiKey, updateSalarySettings } = useSettingsViewModel();
+  const [apiKeyInput, setApiKeyInput] = useState('');
   const [providerInput, setProviderInput] = useState(aiProvider || 'openai');
   const [salaryInput, setSalaryInput] = useState(baseSalary ? baseSalary.toString() : '');
   const [paydayInput, setPaydayInput] = useState(payday ? payday.toString() : '');
@@ -75,7 +75,7 @@ const SettingsScreen = () => {
   };
 
   useEffect(() => {
-    setApiKeyInput(aiApiKey || '');
+    setApiKeyInput('');
     setProviderInput(aiProvider || 'openai');
     setSalaryInput(baseSalary ? baseSalary.toString() : '');
     setPaydayInput(payday ? payday.toString() : '');
@@ -160,15 +160,31 @@ const SettingsScreen = () => {
         <Option label="Gemini" selected={providerInput === 'gemini'} onPress={() => setProviderInput('gemini')} />
 
         <Text style={styles.label}>{t('settings.apiKey')}</Text>
+        {aiApiKey ? (
+          <View style={styles.savedKeyRow}>
+            <Text style={styles.savedKeyText}>{t('settings.apiKeySaved', { key: maskedAiApiKey })}</Text>
+            <Button label={t('settings.removeKey')} variant="secondary" onPress={removeAiApiKey} />
+          </View>
+        ) : null}
         <TextInput
           style={styles.input}
-          placeholder={t('settings.apiKeyPlaceholder')}
+          placeholder={aiApiKey ? t('settings.apiKeyNew') : t('settings.apiKeyPlaceholder')}
           placeholderTextColor={theme.colors.muted}
           value={apiKeyInput}
           onChangeText={setApiKeyInput}
+          autoCapitalize="none"
+          autoCorrect={false}
           secureTextEntry
         />
-        <Button label={t('settings.save')} style={styles.saveButton} onPress={() => updateAISettings(apiKeyInput, providerInput)} />
+        {!aiApiKeyPersists && <Text style={styles.hint}>{t('settings.apiKeyWebWarning')}</Text>}
+        <Button
+          label={t('settings.save')}
+          style={styles.saveButton}
+          onPress={async () => {
+            await updateAISettings(apiKeyInput, providerInput);
+            setApiKeyInput('');
+          }}
+        />
       </Section>
     </ScrollView>
   );
@@ -240,6 +256,24 @@ const createStyles = (theme: Theme) => ({
     selectedOptionText: {
       ...theme.typography.bodyStrong,
       color: theme.colors.text,
+    },
+    savedKeyRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: theme.spacing.sm,
+      marginBottom: theme.spacing.md,
+    },
+    savedKeyText: {
+      ...theme.typography.body,
+      color: theme.colors.text,
+      flexShrink: 1,
+    },
+    hint: {
+      ...theme.typography.caption,
+      color: theme.colors.muted,
+      marginBottom: theme.spacing.sm,
     },
     saveButton: {
       marginTop: theme.spacing.sm,

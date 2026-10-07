@@ -1,10 +1,16 @@
 import { Migration, META_KEY, runMigrations, LATEST_SCHEMA_VERSION } from './migrations';
 import { store } from './memoryStorageMock';
+import * as SecureStore from 'expo-secure-store';
+
+const secureStore = (SecureStore as unknown as { __store: Map<string, string> }).__store;
 
 jest.mock('./Storage', () => require('./memoryStorageMock'));
 
 describe('runMigrations', () => {
-  beforeEach(() => store.clear());
+  beforeEach(() => {
+    store.clear();
+    secureStore.clear();
+  });
 
   it('applies each migration once, in order, and saves the schema version', async () => {
     const calls: number[] = [];
@@ -35,5 +41,22 @@ describe('runMigrations', () => {
     await runMigrations();
     expect(JSON.parse(store.get(META_KEY)!)).toEqual({ schemaVersion: LATEST_SCHEMA_VERSION });
     expect(JSON.parse(store.get('expenses')!)).toEqual(expenses);
+  });
+
+  it('moves an existing AI key from the settings to secure storage', async () => {
+    store.set('settings', JSON.stringify({ currency: 'EUR', aiProvider: 'openai', aiApiKey: 'sk-old-key' }));
+    store.set(META_KEY, JSON.stringify({ schemaVersion: 1 }));
+
+    await runMigrations();
+
+    expect(JSON.parse(store.get('settings')!)).toEqual({ currency: 'EUR', aiProvider: 'openai' });
+    expect(secureStore.get('aiApiKey')).toBe('sk-old-key');
+  });
+
+  it('leaves settings without a key untouched', async () => {
+    store.set('settings', JSON.stringify({ currency: 'USD' }));
+    await runMigrations();
+    expect(JSON.parse(store.get('settings')!)).toEqual({ currency: 'USD' });
+    expect(secureStore.has('aiApiKey')).toBe(false);
   });
 });

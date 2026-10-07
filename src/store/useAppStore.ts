@@ -7,6 +7,7 @@ import { getCategories, getExpenses, saveCategories, saveExpenses } from '../ser
 import { getIncomes, saveIncomes, syncAutoIncomes } from '../services/IncomeService';
 import { DEFAULT_SETTINGS, getSettings, saveSettings } from '../services/SettingsService';
 import { runMigrations } from '../services/storage/migrations';
+import { clearAiApiKey, getAiApiKey, setAiApiKey } from '../services/SecretsService';
 import { generateId } from '../utils/id';
 
 export type NewExpense = Omit<Expense, 'id'>;
@@ -25,6 +26,8 @@ export interface AppState {
   categories: Category[];
   incomes: Income[];
   settings: Settings;
+  /** AI provider key, kept in secure storage and never in `settings`. */
+  aiApiKey?: string;
   /** True once the first load from storage has finished. */
   loaded: boolean;
 
@@ -43,6 +46,10 @@ export interface AppState {
 
   addIncome: (income: Omit<Income, 'id' | 'isAutomatic'>) => Promise<void>;
   deleteIncome: (id: string) => Promise<void>;
+
+  /** Saves the AI provider key to secure storage (empty removes it). */
+  setAiApiKey: (key: string) => Promise<void>;
+  clearAiApiKey: () => Promise<void>;
 
   /** Merges a partial update into the settings and saves them. */
   updateSettings: (changes: Partial<Settings>) => Promise<void>;
@@ -76,14 +83,20 @@ export const useAppStore = create<AppState>()((set, get) => {
     load: async () => {
       try {
         await runMigrations();
+      } catch (error) {
+        // Keep the app usable; the failed migration runs again on next start.
+        console.error('Error running data migrations:', error);
+      }
+      try {
         const settings = await getSettings();
         await syncAutoIncomes();
-        const [expenses, categories, incomes] = await Promise.all([
+        const [expenses, categories, incomes, aiApiKey] = await Promise.all([
           getExpenses(),
           getCategories(),
           getIncomes(),
+          getAiApiKey(),
         ]);
-        set({ settings, expenses, categories, incomes });
+        set({ settings, expenses, categories, incomes, aiApiKey });
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -121,6 +134,15 @@ export const useAppStore = create<AppState>()((set, get) => {
     },
     deleteIncome: async id => {
       await commitIncomes(get().incomes.filter(i => i.id !== id));
+    },
+
+    setAiApiKey: async key => {
+      await setAiApiKey(key);
+      set({ aiApiKey: key.trim() || undefined });
+    },
+    clearAiApiKey: async () => {
+      await clearAiApiKey();
+      set({ aiApiKey: undefined });
     },
 
     updateSettings: async changes => {

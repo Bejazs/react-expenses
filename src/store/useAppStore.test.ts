@@ -1,4 +1,5 @@
 import { appendExpenses, useAppStore } from './useAppStore';
+import { LATEST_SCHEMA_VERSION } from '../services/storage/migrations';
 import { store as storage } from '../services/storage/memoryStorageMock';
 import { Expense } from '../models/Expense';
 
@@ -33,7 +34,7 @@ describe('useAppStore', () => {
     const state = useAppStore.getState();
     expect(state.loaded).toBe(true);
     expect(state.categories.map(c => c.id)).toContain('other');
-    expect(saved('meta')).toEqual({ schemaVersion: 1 });
+    expect(saved('meta')).toEqual({ schemaVersion: LATEST_SCHEMA_VERSION });
   });
 
   it('addExpense updates the store and storage', async () => {
@@ -59,5 +60,22 @@ describe('useAppStore', () => {
     await useAppStore.getState().updateSettings({ currency: 'USD' });
     expect(useAppStore.getState().settings.currency).toBe('USD');
     expect(saved('settings').currency).toBe('USD');
+  });
+});
+
+describe('AI API key', () => {
+  beforeEach(async () => {
+    storage.clear();
+    await useAppStore.getState().clearAiApiKey();
+    await useAppStore.getState().load();
+  });
+
+  it('is saved outside the settings and can be removed', async () => {
+    await useAppStore.getState().setAiApiKey('sk-test-1234');
+    expect(useAppStore.getState().aiApiKey).toBe('sk-test-1234');
+    expect(storage.get('settings')).not.toContain('sk-test');
+
+    await useAppStore.getState().clearAiApiKey();
+    expect(useAppStore.getState().aiApiKey).toBeUndefined();
   });
 });

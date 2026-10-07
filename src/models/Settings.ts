@@ -18,10 +18,6 @@ export interface Settings {
    */
   aiProvider?: string;
 
-  /**
-   * The API key for the selected AI agent feature.
-   */
-  aiApiKey?: string;
 
   /**
    * The base salary of the user.

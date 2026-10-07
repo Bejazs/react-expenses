@@ -51,7 +51,11 @@
     "appearanceDark": "Dark",
     "aiProvider": "AI provider",
     "salaryPlaceholder": "e.g. 1500",
-    "paydayPlaceholder": "e.g. 25"
+    "paydayPlaceholder": "e.g. 25",
+    "apiKeySaved": "Saved key: {{key}}",
+    "apiKeyNew": "New key (optional)",
+    "removeKey": "Remove key",
+    "apiKeyWebWarning": "For security, on the web the key is only kept until you close the tab."
   },
   "expenseModal": {
     "addExpense": "Add Expense",
