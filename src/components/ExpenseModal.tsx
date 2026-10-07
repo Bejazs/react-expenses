@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, Modal, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, TextInput, Modal, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Category } from '../models/Category';
 import { Expense } from '../models/Expense';
 import { formatDateEuropean } from '../utils/dateUtils';
 import { CategoryIcon } from './CategoryIcon';
 import { useTranslation } from 'react-i18next';
+import { Theme, useTheme, useThemedStyles } from '../theme';
+import { Button, createFormStyles } from './ui';
 
 /**
  * Props for the ExpenseModal component.
@@ -42,6 +43,8 @@ interface ExpenseModalProps {
  */
 const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, initialExpense, categories }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date());
@@ -81,7 +84,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
    * Validates input and triggers the onSave callback.
    */
   const handleSave = () => {
-    const numericAmount = parseFloat(amount);
+    const numericAmount = parseFloat(amount.replace(',', '.'));
     if (!description) {
       Alert.alert('Error', t('expenseModal.errorDescription'));
       return;
@@ -114,19 +117,21 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
           <TextInput
             style={styles.input}
             placeholder={t('expenseModal.description')}
+            placeholderTextColor={theme.colors.muted}
             value={description}
             onChangeText={setDescription}
           />
           <TextInput
             style={styles.input}
             placeholder={t('expenseModal.amount')}
+            placeholderTextColor={theme.colors.muted}
             value={amount}
             onChangeText={setAmount}
-            keyboardType="numeric"
+            keyboardType="decimal-pad"
           />
 
-          <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
-            <Text>{formatDateEuropean(date)}</Text>
+          <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input} accessibilityRole="button">
+            <Text style={styles.inputText}>{formatDateEuropean(date)}</Text>
           </TouchableOpacity>
 
           {showDatePicker && Platform.OS === 'android' && (
@@ -148,43 +153,40 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
                         value={date}
                         mode="date"
                         display="spinner"
+                        themeVariant={theme.scheme}
                         onChange={onChangeDate}
                      />
-                     <TouchableOpacity style={styles.doneButton} onPress={() => setShowDatePicker(false)}>
-                         <Text style={styles.doneButtonText}>Done</Text>
-                     </TouchableOpacity>
+                     <Button label="OK" onPress={() => setShowDatePicker(false)} style={{ marginTop: theme.spacing.lg }} />
                   </View>
                </View>
             </Modal>
           )}
 
-          <Text style={styles.label}>{t('expenseModal.category')}:</Text>
+          <Text style={styles.label}>{t('expenseModal.category')}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categorySelector}>
-            {categories.map((category) => (
-              <TouchableOpacity
-                key={category.id}
-                style={[
-                  styles.categoryOption,
-                  selectedCategoryId === category.id && styles.selectedCategoryOption,
-                  { borderColor: selectedCategoryId === category.id ? category.color : 'transparent' }
-                ]}
-                onPress={() => setSelectedCategoryId(category.id)}
-              >
-                <View style={[styles.iconContainer, { backgroundColor: category.color }]}>
-                    <CategoryIcon icon={category.icon} size={20} color="white" />
-                </View>
-                <Text style={styles.categoryName} numberOfLines={1}>{category.name}</Text>
-              </TouchableOpacity>
-            ))}
+            {categories.map((category) => {
+              const selected = selectedCategoryId === category.id;
+              return (
+                <TouchableOpacity
+                  key={category.id}
+                  style={[styles.categoryOption, selected && styles.selectedCategoryOption]}
+                  onPress={() => setSelectedCategoryId(category.id)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected }}
+                  accessibilityLabel={category.name}
+                >
+                  <View style={[styles.iconContainer, { backgroundColor: category.color }]}>
+                      <CategoryIcon icon={category.icon} size={20} color={theme.colors.onCategory} />
+                  </View>
+                  <Text style={styles.categoryName} numberOfLines={2}>{category.name}</Text>
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-                <Text style={styles.cancelButtonText}>{t('expenseModal.cancel')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.saveButtonText}>{t('expenseModal.save')}</Text>
-            </TouchableOpacity>
+            <Button label={t('expenseModal.cancel')} variant="secondary" onPress={onClose} style={styles.button} />
+            <Button label={t('expenseModal.save')} onPress={handleSave} style={styles.button} />
           </View>
         </View>
       </View>
@@ -192,121 +194,40 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ visible, onClose, onSave, i
   );
 };
 
-const styles = StyleSheet.create({
-  centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  modalView: {
-    width: '90%',
-    backgroundColor: 'white',
-    borderRadius: 24,
-    padding: 24,
-    alignItems: 'stretch',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 10,
+const createStyles = (theme: Theme) => ({
+  ...createFormStyles(theme),
+  ...StyleSheet.create({
+    categorySelector: {
+      marginBottom: theme.spacing.lg,
+      maxHeight: 100,
     },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 8,
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#1e293b',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  label: {
-    fontWeight: 'bold',
-    marginBottom: 5,
-    marginTop: 5,
-  },
-  categorySelector: {
-    marginBottom: 20,
-    maxHeight: 90,
-  },
-  categoryOption: {
-    alignItems: 'center',
-    marginRight: 10,
-    padding: 5,
-    borderWidth: 2,
-    borderRadius: 10,
-    width: 70,
-  },
-  selectedCategoryOption: {
-    backgroundColor: '#f9f9f9',
-  },
-  iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 5,
-  },
-  categoryName: {
-    fontSize: 10,
-    textAlign: 'center',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: 14,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 12,
-    marginRight: 10,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: '#64748b',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  saveButton: {
-    flex: 1,
-    paddingVertical: 14,
-    backgroundColor: '#6366f1',
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: '#6366f1',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  saveButtonText: {
-    color: 'white',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  doneButton: {
-    marginTop: 15,
-    paddingVertical: 10,
-    backgroundColor: '#6366f1',
-    borderRadius: 8,
-    alignItems: 'center'
-  },
-  doneButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16
-  }
+    categoryOption: {
+      alignItems: 'center',
+      marginRight: theme.spacing.sm,
+      padding: theme.spacing.xs,
+      borderWidth: 2,
+      borderColor: 'transparent',
+      borderRadius: theme.radii.input,
+      width: 76,
+    },
+    selectedCategoryOption: {
+      borderColor: theme.colors.accent,
+      backgroundColor: theme.colors.peach,
+    },
+    iconContainer: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: theme.spacing.xs,
+    },
+    categoryName: {
+      ...theme.typography.caption,
+      color: theme.colors.text,
+      textAlign: 'center',
+    },
+  }),
 });
 
 export default ExpenseModal;

@@ -3,7 +3,8 @@
     "dashboard": "Dashboard",
     "expenses": "Expenses",
     "categories": "Categories",
-    "settings": "Settings"
+    "settings": "Settings",
+    "add": "Add expense"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -14,7 +15,8 @@
     "noExpensesThisYear": "No expenses this year",
     "totalIncomeCycle": "Total Income (Cycle)",
     "totalSpentCycle": "Total Spent (Cycle)",
-    "possibleSavings": "Possible Savings"
+    "possibleSavings": "Possible Savings",
+    "addIncome": "Add income"
   },
   "expenses": {
     "title": "Expenses",
@@ -42,7 +44,18 @@
     "payday": "Payday (1-31)",
     "calculationCycle": "Calculation Cycle",
     "calendarMonth": "Calendar Month",
-    "salaryCycle": "Salary Cycle"
+    "salaryCycle": "Salary Cycle",
+    "appearance": "Appearance",
+    "appearanceSystem": "System",
+    "appearanceLight": "Light",
+    "appearanceDark": "Dark",
+    "aiProvider": "AI provider",
+    "salaryPlaceholder": "e.g. 1500",
+    "paydayPlaceholder": "e.g. 25",
+    "apiKeySaved": "Saved key: {{key}}",
+    "apiKeyNew": "New key (optional)",
+    "removeKey": "Remove key",
+    "apiKeyWebWarning": "For security, on the web the key is only kept until you close the tab."
   },
   "expenseModal": {
     "addExpense": "Add Expense",
@@ -66,7 +79,12 @@
     "cancel": "Cancel",
     "save": "Save",
     "uploadImage": "Upload Image",
-    "errorName": "Please enter a category name."
+    "errorName": "Please enter a category name.",
+    "icon": "Icon",
+    "searchIcons": "Search icons...",
+    "close": "Close",
+    "colorOption": "Color {{index}}",
+    "errorImage": "Failed to pick image."
   },
   "ai": {
     "importing": "Importing...",
@@ -76,7 +94,9 @@
     "errorParsing": "Error parsing file. Please check the format.",
     "errorApi": "Error communicating with AI. Check your API key.",
     "errorGeneral": "An error occurred during import.",
-    "expensesAdded": "expenses added."
+    "expensesAdded": "expenses added.",
+    "importResult": "{{imported}} imported, {{skipped}} skipped.",
+    "noExpensesFound": "No expenses found in the statement."
   },
   "incomeModal": {
     "addIncome": "Add Income",
@@ -85,5 +105,13 @@
     "amount": "Amount",
     "cancel": "Cancel",
     "save": "Save"
+  },
+  "common": {
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "confirmDelete": "Are you sure?",
+    "uncategorized": "Uncategorized",
+    "deleteItem": "Delete {{name}}",
+    "editItem": "Edit {{name}}"
   }
 }

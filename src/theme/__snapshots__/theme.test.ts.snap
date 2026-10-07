@@ -1,0 +1,75 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`buildTheme matches the dark snapshot 1`] = `
+{
+  "colors": {
+    "accent": "#FF8A65",
+    "accentText": "#FFA98C",
+    "bg": "#151929",
+    "border": "#353B58",
+    "butter": "#3A3522",
+    "danger": "#FF9A8F",
+    "estimate": "#6E7594",
+    "fixed": "#8FB0FF",
+    "lavender": "#2D2A4A",
+    "mint": "#1F3A33",
+    "muted": "#AAB0C6",
+    "ok": "#7FD6A8",
+    "onAccent": "#1B1410",
+    "onCategory": "#FFFFFF",
+    "overlay": "rgba(0, 0, 0, 0.6)",
+    "peach": "#3B2A2A",
+    "shadow": "#000000",
+    "surface": "#20253A",
+    "text": "#F4F0EA",
+    "track": "#2E3450",
+    "variable": "#B59CFF",
+    "warn": "#FFB35C",
+  },
+  "navigation": {
+    "background": "#151929",
+    "border": "#353B58",
+    "card": "#20253A",
+    "notification": "#FF8A65",
+    "primary": "#FFA98C",
+    "text": "#F4F0EA",
+  },
+}
+`;
+
+exports[`buildTheme matches the light snapshot 1`] = `
+{
+  "colors": {
+    "accent": "#C04A1F",
+    "accentText": "#A83F18",
+    "bg": "#FFF6EE",
+    "border": "#EADBCF",
+    "butter": "#FFEFC4",
+    "danger": "#B42318",
+    "estimate": "#8A7F78",
+    "fixed": "#2F6FDB",
+    "lavender": "#E7E2FA",
+    "mint": "#D9F1E3",
+    "muted": "#6B5F57",
+    "ok": "#2F8F5B",
+    "onAccent": "#FFFFFF",
+    "onCategory": "#FFFFFF",
+    "overlay": "rgba(42, 34, 30, 0.45)",
+    "peach": "#FFE3D3",
+    "shadow": "#7A4A2E",
+    "surface": "#FFFFFF",
+    "text": "#2A221E",
+    "track": "#F3E7DD",
+    "variable": "#7B5CD6",
+    "warn": "#B04A00",
+  },
+  "navigation": {
+    "background": "#FFF6EE",
+    "border": "#EADBCF",
+    "card": "#FFFFFF",
+    "notification": "#C04A1F",
+    "primary": "#A83F18",
+    "text": "#2A221E",
+  },
+}
+`;

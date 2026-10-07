@@ -1,19 +1,17 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, RefreshControl } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, useWindowDimensions, RefreshControl } from 'react-native';
 import { PieChart, BarChart } from 'react-native-chart-kit';
 import { useExpenseViewModel } from '../viewmodels/ExpenseViewModel';
 import { useIncomeViewModel } from '../viewmodels/IncomeViewModel';
 import { useCategoryViewModel } from '../viewmodels/CategoryViewModel';
 import { useSettingsViewModel } from '../viewmodels/SettingsViewModel';
-import ExpenseModal from '../components/ExpenseModal';
 import IncomeModal from '../components/IncomeModal';
 import { Ionicons } from '@expo/vector-icons';
 import { safeParseDate } from '../utils/dateUtils';
-import { useIsFocused } from '@react-navigation/native';
+import { toLocale } from '../utils/money';
 import { useTranslation } from 'react-i18next';
-import { LinearGradient } from 'expo-linear-gradient';
-
-const screenWidth = Dimensions.get('window').width;
+import { Theme, useTheme, useThemedStyles, withOpacity } from '../theme';
+import { Card, IconButton, MoneyText, useFormatMoney } from '../components/ui';
 
 /**
  * Dashboard Screen.
@@ -21,28 +19,24 @@ const screenWidth = Dimensions.get('window').width;
  * a pie chart breakdown by category, and a bar chart of monthly history.
  */
 const DashboardScreen = () => {
-  const { t } = useTranslation();
-  const { expenses, loadExpenses, addExpense } = useExpenseViewModel();
-  const { incomes, loadIncomes, addIncome } = useIncomeViewModel();
-  const { categories, loadCategories } = useCategoryViewModel();
-  const { currency, calculationCycle, payday, baseSalary, loadSettings } = useSettingsViewModel();
-  const [expenseModalVisible, setExpenseModalVisible] = useState(false);
+  const { t, i18n } = useTranslation();
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
+  const formatMoney = useFormatMoney();
+  const { width } = useWindowDimensions();
+  const chartWidth = Math.min(width, 720) - 2 * theme.spacing.screen - 2 * theme.spacing.screen;
+  const { expenses, loadExpenses } = useExpenseViewModel();
+  const { incomes, addIncome } = useIncomeViewModel();
+  const { categories } = useCategoryViewModel();
+  const { calculationCycle, payday } = useSettingsViewModel();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadExpenses();
+    setRefreshing(false);
+  };
   const [incomeModalVisible, setIncomeModalVisible] = useState(false);
-  const [fabExpanded, setFabExpanded] = useState(false);
-  const isFocused = useIsFocused();
-
-  // Reload data when screen is focused
-  useEffect(() => {
-    if (isFocused) {
-      loadSettings().then(() => {
-        loadIncomes();
-        loadExpenses();
-        loadCategories();
-      });
-    }
-  }, [isFocused]);
-
-  const currencySymbol = currency === 'EUR' ? '€' : '$';
 
   /**
    * Computes derived data for the dashboard:
@@ -97,11 +91,12 @@ const DashboardScreen = () => {
     const pData = Array.from(categoryMap.entries()).map(([catId, amount]) => {
       const cat = categories.find(c => c.id === catId);
       return {
-        name: cat ? cat.name : 'Unknown',
+        name: cat ? cat.name : t('common.uncategorized'),
         population: amount,
-        color: cat ? cat.color : '#ccc',
-        legendFontColor: '#7F7F7F',
-        legendFontSize: 12
+        color: cat ? cat.color : theme.colors.estimate,
+        legendFontColor: theme.colors.muted,
+        legendFontSize: 12,
+        legendFontFamily: theme.fonts.body,
       };
     }).sort((a, b) => b.population - a.population);
 
@@ -111,7 +106,7 @@ const DashboardScreen = () => {
 
     for (let i = 5; i >= 0; i--) {
         const d = new Date(currentYear, currentMonth - i, 1);
-        labels.push(d.toLocaleString('default', { month: 'short' }));
+        labels.push(d.toLocaleString(toLocale(i18n.language), { month: 'short' }));
 
         const m = d.getMonth();
         const y = d.getFullYear();
@@ -126,128 +121,116 @@ const DashboardScreen = () => {
     }
 
     return { totalSpent: spent, totalIncome: income, pieData: pData, barData: { labels, datasets: [{ data }] } };
-  }, [expenses, incomes, categories, calculationCycle, payday]);
+  }, [expenses, incomes, categories, calculationCycle, payday, theme, t, i18n.language]);
 
-  const handleAddExpense = async (expenseData: any) => {
-      await addExpense(expenseData.description, expenseData.amount, expenseData.date, expenseData.categoryId);
-  };
-  
   const handleAddIncome = async (incomeData: any) => {
       await addIncome(incomeData.description, incomeData.amount, incomeData.date);
   };
 
   const chartConfig = {
-    backgroundGradientFrom: "#fff",
-    backgroundGradientTo: "#fff",
-    color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    backgroundGradientFrom: theme.colors.surface,
+    backgroundGradientTo: theme.colors.surface,
+    color: (opacity = 1) => withOpacity(theme.colors.accent, opacity),
+    labelColor: () => theme.colors.muted,
     strokeWidth: 2,
     barPercentage: 0.5,
+    decimalPlaces: 2,
+    fillShadowGradientFrom: theme.colors.accent,
+    fillShadowGradientFromOpacity: 1,
+    fillShadowGradientTo: theme.colors.accent,
+    fillShadowGradientToOpacity: 0.7,
+    propsForLabels: { fontFamily: theme.fonts.body },
+    propsForBackgroundLines: { stroke: theme.colors.track },
   };
+
+  const savings = totalIncome - totalSpent;
 
   return (
     <View style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={() => { loadSettings().then(() => { loadIncomes(); loadExpenses(); }); }} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={theme.colors.accent} />}
       >
-        <Text style={styles.title}>{t('dashboard.title')}</Text>
+        <Text accessibilityRole="header" style={styles.title}>{t('dashboard.title')}</Text>
 
-        <LinearGradient
-            colors={['#6366f1', '#4f46e5', '#4338ca']}
-            style={[styles.card, { paddingVertical: 35, borderRadius: 24 }]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-        >
-            <Text style={[styles.cardTitle, {color: 'rgba(255,255,255,0.8)', textAlign: 'center'}]}>{t('dashboard.possibleSavings')}</Text>
-            <Text style={[styles.totalAmount, {color: 'white', fontSize: 44, marginVertical: 0}]}>
-                {currencySymbol}{(totalIncome - totalSpent).toFixed(2)}
-            </Text>
-        </LinearGradient>
+        <Card tone="accent" style={styles.hero}>
+            <Text style={styles.heroLabel}>{t('dashboard.possibleSavings')}</Text>
+            <MoneyText value={savings} size="large" color={theme.colors.onAccent} />
+        </Card>
 
         <View style={styles.metricsRow}>
-            <View style={[styles.card, styles.metricCard]}>
+            <Card tone="mint" style={styles.metricCard}>
                 <View style={styles.metricHeader}>
-                   <Ionicons name="arrow-up-circle" size={24} color="#10b981" />
-                   <Text style={[styles.cardTitle, {marginLeft: 5, fontSize: 14, color: '#6b7280'}]}>{t('dashboard.totalIncomeCycle')}</Text>
+                   <Ionicons name="arrow-up-circle" size={22} color={theme.colors.ok} />
+                   <Text style={styles.metricTitle}>{t('dashboard.totalIncomeCycle')}</Text>
                 </View>
-                <Text style={[styles.totalAmount, {color: '#111827', fontSize: 22, textAlign: 'left', marginVertical: 5}]}>{currencySymbol}{totalIncome.toFixed(2)}</Text>
-            </View>
+                <View style={styles.metricValueRow}>
+                  <MoneyText value={totalIncome} />
+                  <IconButton
+                    icon="add-circle"
+                    accessibilityLabel={t('dashboard.addIncome')}
+                    color={theme.colors.ok}
+                    onPress={() => setIncomeModalVisible(true)}
+                    testID="add-income-btn"
+                  />
+                </View>
+            </Card>
 
-            <View style={[styles.card, styles.metricCard]}>
+            <Card tone="peach" style={styles.metricCard}>
                 <View style={styles.metricHeader}>
-                   <Ionicons name="arrow-down-circle" size={24} color="#ef4444" />
-                   <Text style={[styles.cardTitle, {marginLeft: 5, fontSize: 14, color: '#6b7280'}]}>{t('dashboard.totalSpentCycle')}</Text>
+                   <Ionicons name="arrow-down-circle" size={22} color={theme.colors.danger} />
+                   <Text style={styles.metricTitle}>{t('dashboard.totalSpentCycle')}</Text>
                 </View>
-                <Text style={[styles.totalAmount, {color: '#111827', fontSize: 22, textAlign: 'left', marginVertical: 5}]}>{currencySymbol}{totalSpent.toFixed(2)}</Text>
-            </View>
+                <View style={styles.metricValueRow}>
+                  <MoneyText value={totalSpent} />
+                </View>
+            </Card>
         </View>
 
-        {pieData.length > 0 ? (
-            <View style={styles.card}>
-                <Text style={styles.cardTitle}>{t('dashboard.expensesByCategory')}</Text>
-                <PieChart
-                    data={pieData}
-                    width={screenWidth - 60}
-                    height={220}
-                    chartConfig={chartConfig}
-                    accessor={"population"}
-                    backgroundColor={"transparent"}
-                    paddingLeft={"15"}
-                    center={[0, 0]}
-                    absolute
-                />
-            </View>
-        ) : (
-            <View style={styles.card}>
-                <Text style={styles.cardTitle}>{t('dashboard.expensesByCategory')}</Text>
-                <Text style={{textAlign: 'center', margin: 20}}>{t('dashboard.noExpensesThisMonth')}</Text>
-            </View>
-        )}
+        <Card>
+            <Text style={styles.cardTitle}>{t('dashboard.expensesByCategory')}</Text>
+            {pieData.length > 0 ? (
+                <>
+                  <View style={styles.pieWrap}>
+                    <PieChart
+                        data={pieData}
+                        width={200}
+                        height={200}
+                        chartConfig={chartConfig}
+                        accessor={"population"}
+                        backgroundColor={"transparent"}
+                        paddingLeft={"50"}
+                        hasLegend={false}
+                    />
+                  </View>
+                  {pieData.map(item => (
+                    <View key={item.name} style={styles.legendRow}>
+                      <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+                      <Text style={styles.legendLabel} numberOfLines={1}>{item.name}</Text>
+                      <MoneyText value={item.population} size="small" />
+                    </View>
+                  ))}
+                </>
+            ) : (
+                <Text style={styles.emptyText}>{t('dashboard.noExpensesThisMonth')}</Text>
+            )}
+        </Card>
 
-        <View style={styles.card}>
+        <Card>
             <Text style={styles.cardTitle}>{t('dashboard.monthlyExpenses')}</Text>
             <BarChart
                 data={barData}
-                width={screenWidth - 60}
+                width={chartWidth}
                 height={220}
-                yAxisLabel={currencySymbol}
+                yAxisLabel=""
                 yAxisSuffix=""
-                chartConfig={chartConfig}
+                chartConfig={{ ...chartConfig, formatYLabel: (value: string) => formatMoney(Number(value)) }}
                 verticalLabelRotation={30}
+                fromZero
             />
-        </View>
+        </Card>
       </ScrollView>
 
-      <View style={styles.fabContainer}>
-         {fabExpanded && (
-           <>
-             <View style={styles.fabActionRow}>
-                <Text style={styles.fabLabel}>{t('incomeModal.addIncome')}</Text>
-                <TouchableOpacity style={[styles.fabSmall, {backgroundColor: '#10b981'}]} onPress={() => { setIncomeModalVisible(true); setFabExpanded(false); }} testID="add-income-btn">
-                    <Ionicons name="cash-outline" size={24} color="white" />
-                </TouchableOpacity>
-             </View>
-             <View style={styles.fabActionRow}>
-                <Text style={styles.fabLabel}>{t('expenseModal.addExpense')}</Text>
-                <TouchableOpacity style={[styles.fabSmall, {backgroundColor: '#ef4444'}]} onPress={() => { setExpenseModalVisible(true); setFabExpanded(false); }} testID="add-expense-btn">
-                    <Ionicons name="remove-outline" size={24} color="white" />
-                </TouchableOpacity>
-             </View>
-           </>
-         )}
-         <TouchableOpacity style={[styles.fabMain, fabExpanded && {backgroundColor: '#4b5563', transform: [{rotate: '45deg'}]}]} onPress={() => setFabExpanded(!fabExpanded)} testID="main-fab">
-             <Ionicons name="add" size={30} color="white" />
-         </TouchableOpacity>
-      </View>
-
-      <ExpenseModal
-        visible={expenseModalVisible}
-        onClose={() => setExpenseModalVisible(false)}
-        onSave={handleAddExpense}
-        categories={categories}
-      />
-      
       <IncomeModal
         visible={incomeModalVisible}
         onClose={() => setIncomeModalVisible(false)}
@@ -257,113 +240,90 @@ const DashboardScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  scrollContent: {
-    padding: 20,
-    paddingBottom: 100,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#1e293b',
-    marginBottom: 20,
-    marginTop: 10,
-  },
-  card: {
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
-    elevation: 4,
-    shadowColor: '#4f46e5',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 15,
-  },
-  metricsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  metricCard: {
-    width: '47%',
-    padding: 15,
-    borderRadius: 16,
-  },
-  metricHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 5,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1e293b',
-    marginBottom: 5,
-  },
-  totalAmount: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#6366f1',
-    textAlign: 'center',
-    marginVertical: 10,
-  },
-  fabContainer: {
-    position: 'absolute',
-    right: 25,
-    bottom: 25,
-    alignItems: 'flex-end',
-  },
-  fabMain: {
-    backgroundColor: '#6366f1',
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#6366f1',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-  },
-  fabActionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  fabLabel: {
-    backgroundColor: 'white',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 12,
-    marginRight: 15,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#4b5563',
-    elevation: 4,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-  },
-  fabSmall: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    marginRight: 5,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.bg,
+    },
+    scrollContent: {
+      padding: theme.spacing.screen,
+      paddingBottom: theme.spacing.xxl * 2,
+      width: '100%',
+      maxWidth: 720,
+      alignSelf: 'center',
+    },
+    title: {
+      ...theme.typography.title,
+      color: theme.colors.text,
+      marginBottom: theme.spacing.lg,
+      marginTop: theme.spacing.sm,
+    },
+    hero: {
+      alignItems: 'center',
+      paddingVertical: theme.spacing.xxl,
+    },
+    heroLabel: {
+      ...theme.typography.label,
+      color: theme.colors.onAccent,
+      marginBottom: theme.spacing.xs,
+    },
+    metricsRow: {
+      flexDirection: 'row',
+      gap: theme.spacing.md,
+    },
+    metricCard: {
+      flex: 1,
+      padding: theme.spacing.lg,
+    },
+    metricHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: theme.spacing.xs,
+    },
+    metricTitle: {
+      ...theme.typography.label,
+      color: theme.colors.text,
+      marginLeft: theme.spacing.xs,
+      flexShrink: 1,
+    },
+    metricValueRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      minHeight: theme.minTouch,
+    },
+    cardTitle: {
+      ...theme.typography.heading,
+      color: theme.colors.text,
+      marginBottom: theme.spacing.sm,
+    },
+    pieWrap: {
+      alignItems: 'center',
+      marginBottom: theme.spacing.sm,
+    },
+    legendRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: theme.spacing.xs,
+    },
+    legendDot: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      marginRight: theme.spacing.sm,
+    },
+    legendLabel: {
+      ...theme.typography.body,
+      color: theme.colors.text,
+      flex: 1,
+    },
+    emptyText: {
+      ...theme.typography.body,
+      color: theme.colors.muted,
+      textAlign: 'center',
+      margin: theme.spacing.lg,
+    },
+  });
 
 export default DashboardScreen;

@@ -3,7 +3,8 @@
     "dashboard": "Painel",
     "expenses": "Despesas",
     "categories": "Categorias",
-    "settings": "Configurações"
+    "settings": "Definições",
+    "add": "Adicionar despesa"
   },
   "dashboard": {
     "title": "Painel",
@@ -14,7 +15,8 @@
     "noExpensesThisYear": "Sem despesas este ano",
     "totalIncomeCycle": "Total de Rendimentos (Ciclo)",
     "totalSpentCycle": "Total Gasto (Ciclo)",
-    "possibleSavings": "Poupanças Possíveis"
+    "possibleSavings": "Poupanças Possíveis",
+    "addIncome": "Adicionar rendimento"
   },
   "expenses": {
     "title": "Despesas",
@@ -42,7 +44,18 @@
     "payday": "Dia de Pagamento (1-31)",
     "calculationCycle": "Ciclo de Cálculo",
     "calendarMonth": "Mês Civil",
-    "salaryCycle": "Ciclo Salarial"
+    "salaryCycle": "Ciclo Salarial",
+    "appearance": "Aparência",
+    "appearanceSystem": "Sistema",
+    "appearanceLight": "Claro",
+    "appearanceDark": "Escuro",
+    "aiProvider": "Fornecedor de IA",
+    "salaryPlaceholder": "ex.: 1500",
+    "paydayPlaceholder": "ex.: 25",
+    "apiKeySaved": "Chave guardada: {{key}}",
+    "apiKeyNew": "Nova chave (opcional)",
+    "removeKey": "Remover chave",
+    "apiKeyWebWarning": "Por segurança, na versão web a chave só fica guardada até fechar o separador."
   },
   "expenseModal": {
     "addExpense": "Adicionar Despesa",
@@ -66,7 +79,12 @@
     "cancel": "Cancelar",
     "save": "Guardar",
     "uploadImage": "Carregar Imagem",
-    "errorName": "Por favor, introduza um nome para a categoria."
+    "errorName": "Por favor, introduza um nome para a categoria.",
+    "icon": "Ícone",
+    "searchIcons": "Procurar ícones...",
+    "close": "Fechar",
+    "colorOption": "Cor {{index}}",
+    "errorImage": "Não foi possível carregar a imagem."
   },
   "ai": {
     "importing": "A importar...",
@@ -76,7 +94,9 @@
     "errorParsing": "Erro ao ler o ficheiro. Verifique o formato.",
     "errorApi": "Erro ao comunicar com a AI. Verifique a sua API key.",
     "errorGeneral": "Ocorreu um erro durante a importação.",
-    "expensesAdded": "despesas adicionadas."
+    "expensesAdded": "despesas adicionadas.",
+    "importResult": "{{imported}} importadas, {{skipped}} ignoradas.",
+    "noExpensesFound": "Nenhuma despesa encontrada no extrato."
   },
   "incomeModal": {
     "addIncome": "Adicionar Rendimento",
@@ -85,5 +105,13 @@
     "amount": "Valor",
     "cancel": "Cancelar",
     "save": "Guardar"
+  },
+  "common": {
+    "delete": "Apagar",
+    "cancel": "Cancelar",
+    "confirmDelete": "Tem a certeza?",
+    "uncategorized": "Sem categoria",
+    "deleteItem": "Apagar {{name}}",
+    "editItem": "Editar {{name}}"
   }
 }
