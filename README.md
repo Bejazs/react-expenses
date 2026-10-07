@@ -1,96 +1,92 @@
-# Expense Tracker Mobile App
+# Budgemmy
 
-This is a simple mobile application for tracking personal expenses. It allows users to add new expenses, view a list of their expenses, and persists the data locally on the device.
+App móvel de finanças pessoais que ajuda a controlar as despesas fixas e momentâneas de cada mês, a saber quanto vai sobrar no fim do mês e, com a ajuda de IA, a poupar mais.
 
-## Features
+O caminho até lá está no roadmap: [#25](https://github.com/Bejazs/react-expenses/issues/25).
 
-- Add new expenses with a description and amount.
-- View a list of all recorded expenses.
-- Data persistence using local file storage.
-- Loading indicator while fetching data.
-- **Multi-language support:** Switch between English and Portuguese seamlessly.
-- **AI Agent Integration:** Import bank statements (PDF or CSV) directly into the app. The AI automatically categorizes and adds your expenses based on your available categories. (Requires an OpenAI API Key).
+## Visão
 
-## Tech Stack
+1. Registar as **despesas fixas** (renda, subscrições, seguros) uma vez e vê-las aparecer sozinhas em cada ciclo, ao lado das **despesas momentâneas** do dia a dia.
+2. Calcular o **saldo no fim do mês**, o atual e o **previsto**, tendo em conta o salário e o que ainda falta pagar.
+3. Usar **IA** para sugerir um plano de poupança concreto a partir dos dados do utilizador e acompanhar metas.
 
-- **React Native**: A framework for building native mobile apps using React.
-- **Expo**: A platform for making universal native apps for Android, iOS, and the web with JavaScript and React.
-- **TypeScript**: A typed superset of JavaScript that compiles to plain JavaScript.
+## Funcionalidades atuais
 
-## Getting Started
+- Registo, edição e eliminação de despesas e categorias (com ícones ou imagens).
+- Rendimentos extra e salário base adicionado automaticamente no dia de pagamento.
+- Ciclo de cálculo por mês civil ou de salário a salário.
+- Dashboard com gráficos de gastos por categoria.
+- Importação de extratos (PDF ou CSV) com IA (OpenAI, Anthropic ou Gemini), que categoriza as despesas automaticamente.
+- Interface em português e inglês.
+- Dados guardados localmente no dispositivo.
 
-### Prerequisites
+## Tecnologias
 
-- **Node.js**: Recommended LTS version (v20+).
-    - *Note for Windows users:* This project includes a fix for **Node.js v24+**.
-- **Expo Go**: Ensure you have the latest version installed on your mobile device (compatible with SDK 54).
+- [Expo](https://expo.dev) SDK 57 e React Native
+- TypeScript
+- React Navigation, i18next, react-native-chart-kit
+- Jest (`jest-expo`) para testes
 
-### Installation
+## Como correr
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   ```
-2. **Navigate to the project directory:**
-   ```bash
-   cd <project-directory>
-   ```
-3. **Install the dependencies:**
-   Due to peer dependency requirements in recent React Native versions, use the legacy peer deps flag:
-   ```bash
-   npm install --legacy-peer-deps
-   ```
+### Requisitos
 
-### Running the Application
+- Node.js 20 LTS ou mais recente.
+- A app **Expo Go** atualizada no telemóvel (compatível com o SDK 57), ou um emulador Android / simulador iOS.
 
-1. **Start the Expo development server:**
-   We recommend running with the clear cache flag to avoid issues:
-   ```bash
-   npx expo start -c
-   ```
+### Instalação
 
-2. **Running on iOS (iPhone/iPad):**
-   - **Physical Device:**
-     1. Install the **Expo Go** app from the App Store.
-     2. Open the camera app on your iPhone and scan the QR code displayed in the terminal.
-     3. Tap the notification to open the project in Expo Go.
-   - **Simulator (macOS only):**
-     1. Ensure you have Xcode installed.
-     2. Press `i` in the terminal after starting the server to open the iOS simulator.
+```bash
+git clone https://github.com/Bejazs/react-expenses.git
+cd react-expenses
+npm install --legacy-peer-deps
+```
 
-3. **Running on Android:**
-   - **Physical Device:**
-     1. Install the **Expo Go** app from the Google Play Store.
-     2. Open the Expo Go app and tap "Scan QR Code".
-     3. Scan the QR code displayed in the terminal.
-   - **Emulator:**
-     1. Ensure you have Android Studio and a virtual device set up.
-     2. Press `a` in the terminal after starting the server to open the Android emulator.
+O `--legacy-peer-deps` é necessário por causa de dependências *peer* das versões recentes do React Native.
 
-### Troubleshooting
+### Arrancar a app
 
-- **Windows Users**: If you encounter `mkdir` errors related to `node:sea`, this project is already configured to automatically use a patched version of the Expo CLI. Ensure you ran `npm install` correctly.
-- If you encounter connection issues, ensure your phone and computer are on the same Wi-Fi network.
-- You can also try running `npx expo start --tunnel` if you have network restrictions.
+```bash
+npx expo start -c
+```
 
-## New AI Feature Setup
+- **Telemóvel:** abra o Expo Go e leia o código QR que aparece no terminal (no iPhone, com a câmara).
+- **Emulador Android:** carregue em `a` no terminal.
+- **Simulador iOS (só macOS):** carregue em `i` no terminal.
+- **Web:** carregue em `w` no terminal.
 
-1. Open the App and navigate to the **Settings** tab.
-2. Under **AI Agent**, enter your **OpenAI API Key** and hit Save.
-3. Navigate to the **Expenses** tab and click on the "Import Statement" button.
-4. Select a PDF or CSV file. The AI will parse the file and automatically categorize and add the expenses!
+Se o telemóvel não ligar, confirme que está na mesma rede Wi-Fi que o computador ou use `npx expo start --tunnel`.
 
-## Code Overview
+### Verificações
 
-The codebase is organized into the following directories:
+```bash
+npm run typecheck   # TypeScript
+npm test            # testes (termina sozinho)
+npm run test:watch  # testes em modo watch
+```
 
-- **`src/models`**: Contains the data models for the application (e.g., `Expense.ts`).
-- **`src/services`**: Handles data persistence and retrieval (e.g., `ExpenseService.ts`).
-- **`src/viewmodels`**: Manages the application's state and business logic (e.g., `ExpenseViewModel.ts`).
-- **`src/views`**: Contains the UI components and screens (e.g., `ExpenseScreen.tsx`).
-- **`src/i18n`**: Contains the localization files.
-- **`src/services/ai`**: Contains the OpenAI agent integration and file parsing logic.
+### Importação de extratos com IA
 
-## Contributing
+1. Na aba **Configurações**, escolha o fornecedor de IA e introduza a sua chave de API.
+2. Na aba **Despesas**, toque em "Importar Extrato (AI)" e escolha um PDF ou CSV.
+3. As despesas válidas são categorizadas e gravadas; a app indica quantas foram importadas e quantas foram ignoradas.
 
-Contributions are welcome! If you have any suggestions or find any issues, please feel free to open an issue or submit a pull request.
+## Estrutura (MVVM)
+
+```
+src/
+  models/       tipos de dados (Expense, Category, Income, Settings)
+  services/     persistência local e regras de negócio
+    ai/         integração com a IA e leitura de PDF/CSV
+  viewmodels/   hooks com o estado e as ações de cada ecrã
+  views/        ecrãs
+  components/   componentes reutilizáveis (modais, ícones)
+  utils/        funções auxiliares (datas, IDs, validação)
+  i18n/         traduções PT/EN
+scripts/        utilitários de desenvolvimento (capturas de ecrã)
+screenshots/    capturas da app
+```
+
+## Contribuir
+
+O trabalho é organizado por issues ligadas ao roadmap [#25](https://github.com/Bejazs/react-expenses/issues/25). Abra um PR por issue, a referir o número da issue.

@@ -38,3 +38,6 @@ ios/build/
 *.keystore
 *.p12
 *.key
+
+# Logs
+*.log

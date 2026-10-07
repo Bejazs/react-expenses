@@ -1,5 +1,5 @@
 {
-  "name": "react-hello-world",
+  "name": "budgemmy",
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
@@ -7,7 +7,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "test": "jest --watchAll",
+    "test": "jest",
+    "test:watch": "jest --watchAll",
     "typecheck": "tsc --noEmit"
   },
   "jest": {

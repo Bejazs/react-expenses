@@ -1,15 +1,16 @@
 {
   "expo": {
-    "name": "Expense Tracker",
-    "slug": "expense-tracker",
+    "name": "Budgemmy",
+    "slug": "budgemmy",
+    "scheme": "budgemmy",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "ios": {
-      "bundleIdentifier": "com.example.expensetracker"
+      "bundleIdentifier": "com.bejazs.budgemmy"
     },
     "android": {
-      "package": "com.example.expensetracker"
+      "package": "com.bejazs.budgemmy"
     }
   }
 }
