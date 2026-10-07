@@ -1,5 +1,7 @@
 # Budgemmy
 
+[![CI](https://github.com/Bejazs/react-expenses/actions/workflows/ci.yml/badge.svg)](https://github.com/Bejazs/react-expenses/actions/workflows/ci.yml)
+
 App móvel de finanças pessoais que ajuda a controlar as despesas fixas e momentâneas de cada mês, a saber quanto vai sobrar no fim do mês e, com a ajuda de IA, a poupar mais.
 
 O caminho até lá está no roadmap: [#25](https://github.com/Bejazs/react-expenses/issues/25).
@@ -89,4 +91,4 @@ screenshots/    capturas da app
 
 ## Contribuir
 
-O trabalho é organizado por issues ligadas ao roadmap [#25](https://github.com/Bejazs/react-expenses/issues/25). Abra um PR por issue, a referir o número da issue.
+O trabalho é organizado por issues ligadas ao roadmap [#25](https://github.com/Bejazs/react-expenses/issues/25). Abra um PR por issue, a referir o número da issue. Cada PR corre automaticamente o typecheck e os testes no GitHub Actions.
